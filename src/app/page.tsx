@@ -99,7 +99,7 @@ export default function Home() {
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="hidden md:flex rounded-xl object-cover md:h-[258px] md:w-[340px]"
+                    className="hidden md:flex rounded-xl object-cover md:h-64.5 md:w-85"
                   />
                   <div className="flex-1 space-y-3">
                     <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5 ">

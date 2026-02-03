@@ -87,7 +87,7 @@ export default function Home() {
             {recommendedPosts.map((post) => (
               <article
                 key={post.id}
-                className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch"
+                className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch "
               >
                 <img
                   src={post.image}

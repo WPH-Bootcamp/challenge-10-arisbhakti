@@ -1,5 +1,13 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const tags = ["Programming", "Frontend", "Coding"];
 
@@ -212,9 +220,84 @@ export default function DetailPage() {
                 </div>
               </div>
             ))}
-            <a href="#" className="text-sm font-semibold text-[#0b8bd3]">
-              See All Comments
-            </a>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="text-left text-sm font-semibold text-[#0b8bd3]"
+                >
+                  See All Comments
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Comments(5)</DialogTitle>
+                  <DialogClose asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                      aria-label="Close"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </DialogClose>
+                </DialogHeader>
+
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-semibold">Give your Comments</p>
+                  <textarea
+                    placeholder="Enter your comment"
+                    className="h-28 w-full resize-none rounded-2xl border border-[#d1d5db] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+                  />
+                  <div className="flex justify-end sm:justify-end">
+                    <button className="mt-2 h-11 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white sm:w-44">
+                      Send
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-6 max-h-[50vh] space-y-4 overflow-y-auto border-t border-[#e7e9ee] pt-5">
+                  {comments.map((comment) => (
+                    <div
+                      key={`modal-${comment.id}`}
+                      className="flex gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
+                    >
+                      <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+                        <img
+                          src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=80&q=80"
+                          alt={comment.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold">
+                          {comment.name}
+                        </div>
+                        <p className="text-xs text-[#6b7280]">
+                          {comment.date}
+                        </p>
+                        <p className="mt-2 text-sm text-[#4b5563]">
+                          {comment.message}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 

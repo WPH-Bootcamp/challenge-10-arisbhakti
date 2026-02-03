@@ -99,7 +99,7 @@ export default function Home() {
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="hidden md:flex rounded-xl object-cover md:h-64.5 md:w-85"
+                    className="hidden md:flex rounded-[6px] object-cover md:h-64.5 md:w-85"
                   />
                   <div className="flex-1 space-y-3">
                     <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5 ">
@@ -141,7 +141,7 @@ export default function Home() {
                           alt="Likes"
                           className="h-4 w-4"
                         />
-                        <span>20</span>
+                        <span className="text-neutral-600">20</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <img
@@ -149,7 +149,7 @@ export default function Home() {
                           alt="Comments"
                           className="h-4 w-4"
                         />
-                        <span>20</span>
+                        <span className="text-neutral-600">200</span>
                       </div>
                     </div>
                   </div>
@@ -157,7 +157,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="mt-8 flex items-center justify-center gap-3 text-sm text-[#6b7280]">
+            <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
               <button className="flex items-center gap-2 rounded-full px-4 py-2">
                 <svg
                   width="16"
@@ -228,7 +228,7 @@ export default function Home() {
                             alt="Likes"
                             className="h-4 w-4"
                           />
-                          <span>20</span>
+                          <span className="text-neutral-600">20</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <img
@@ -236,7 +236,7 @@ export default function Home() {
                             alt="Comments"
                             className="h-4 w-4"
                           />
-                          <span>20</span>
+                          <span className="text-neutral-600">20</span>
                         </div>
                       </div>
                     </article>

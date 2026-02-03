@@ -95,10 +95,18 @@ export default function Header() {
               <button
                 type="button"
                 className="inline-flex h-9 w-9 items-center justify-center text-[#111827]"
-                aria-label="Open menu"
-                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
               >
-                <img src="/humberger-icon.png" alt="Menu" className="h-5 w-5" />
+                {isMobileMenuOpen ? (
+                  <span className="text-xl leading-none">×</span>
+                ) : (
+                  <img
+                    src="/humberger-icon.png"
+                    alt="Menu"
+                    className="h-5 w-5"
+                  />
+                )}
               </button>
             </div>
           )}
@@ -139,28 +147,16 @@ export default function Header() {
         </div>
       </div>
 
-      {isMobileMenuOpen && !isLogin && (
-        <div className="fixed inset-0 z-50 bg-white px-6 py-6 sm:hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="/your-logo.svg"
-                alt="Your Logo"
-                className="w-5 h-[22px]"
-              />
-              <span className="text-base font-bold">Your Logo</span>
-            </div>
-            <button
-              type="button"
-              aria-label="Close menu"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-xl"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="mt-16 flex flex-col items-center gap-6">
+      {!isLogin && (
+        <div
+          className={`absolute left-0 right-0 top-full z-40 bg-white px-6 py-10 transition-all duration-200 sm:hidden ${
+            isMobileMenuOpen
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-2 opacity-0 pointer-events-none"
+          }`}
+          style={{ height: "calc(100vh - 72px)" }}
+        >
+          <div className="flex flex-col items-center gap-6">
             <a href="/login" className="text-base font-semibold text-[#0b8bd3]">
               Login
             </a>

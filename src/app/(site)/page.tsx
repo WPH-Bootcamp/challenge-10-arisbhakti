@@ -1,6 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 
 const recommendedPosts = [
   {
@@ -78,10 +75,7 @@ const mostLikedPosts = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
-      <Header />
-
-      <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <div className="flex flex-col gap-10 lg:flex-row">
           <section className="w-full lg:flex-1">
             <div className="flex items-center justify-between">
@@ -246,9 +240,6 @@ export default function Home() {
             </div>
           </aside>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+    </main>
   );
 }

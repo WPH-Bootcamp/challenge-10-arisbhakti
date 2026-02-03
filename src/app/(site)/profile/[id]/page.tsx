@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 const tags = ["Programming", "Frontend", "Coding"];
 
@@ -20,10 +18,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"posts" | "password">("posts");
 
   return (
-    <div className="min-h-screen bg-white text-[#111827]">
-      <Header />
-
-      <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <section className="mx-auto w-full max-w-3xl rounded-2xl border border-[#e7e9ee] px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -267,9 +262,6 @@ export default function ProfilePage() {
             </form>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+    </main>
   );
 }

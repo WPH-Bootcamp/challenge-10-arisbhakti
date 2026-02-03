@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import {
   Dialog,
   DialogClose,
@@ -62,10 +60,7 @@ const comments = [
 
 export default function DetailPage() {
   return (
-    <div className="min-h-screen bg-white text-[#111827]">
-      <Header />
-
-      <main className="mx-auto w-full max-w-3xl px-6 py-10">
+    <main className="mx-auto w-full max-w-3xl px-6 py-10">
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold sm:text-3xl">
             5 Reasons to Learn Frontend Development in 2025
@@ -383,9 +378,6 @@ export default function DetailPage() {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </main>
   );
 }

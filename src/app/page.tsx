@@ -78,14 +78,16 @@ const mostLikedPosts = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white text-[#111827]">
+    <div className="min-h-screen bg-white text-neutral-900">
       <Header />
 
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
         <div className="flex flex-col gap-10 lg:flex-row">
           <section className="w-full lg:flex-1">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Recommend For You</h2>
+              <h2 className="font-bold text-xl leading-8.5 -tracking-[0.03em] md:text-[28px] md-leading-[38px]">
+                Recommend For You
+              </h2>
             </div>
 
             <div className="mt-6 space-y-8">
@@ -97,23 +99,25 @@ export default function Home() {
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="h-[210px] w-full rounded-xl object-cover md:h-[200px] md:w-[260px]"
+                    className="hidden md:flex rounded-xl object-cover md:h-[258px] md:w-[340px]"
                   />
                   <div className="flex-1 space-y-3">
-                    <h3 className="text-lg font-semibold leading-snug">
+                    <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5 ">
                       {post.title}
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
+                          className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
-                    <p className="text-sm text-[#4b5563]">{post.excerpt}</p>
+                    <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
+                      {post.excerpt}
+                    </p>
                     <div className="flex items-center gap-3 text-xs text-[#6b7280]">
                       <div className="flex items-center gap-2">
                         <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
@@ -128,7 +132,7 @@ export default function Home() {
                         </span>
                       </div>
                       <span>•</span>
-                      <span>{post.date}</span>
+                      <span className="text-neutral-600">{post.date}</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#6b7280]">
                       <div className="flex items-center gap-2">
@@ -202,17 +206,21 @@ export default function Home() {
           <aside className="w-full lg:w-[320px]">
             <div className="lg:sticky lg:top-8">
               <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">
-                <h2 className="text-lg font-semibold">Most Liked</h2>
+                <h2 className="text-xl font-bold leading-8.5 -tracking-[0.03em md:text-2xl md:leading-9">
+                  Most Liked
+                </h2>
                 <div className="mt-6 space-y-6">
                   {mostLikedPosts.map((post) => (
                     <article
                       key={post.id}
                       className="space-y-3 border-b border-[#e7e9ee] pb-6"
                     >
-                      <h3 className="text-sm font-semibold text-[#111827]">
+                      <h3 className="text-base leading-7.5 -tracking-[0.03em] font-bold">
                         {post.title}
                       </h3>
-                      <p className="text-sm text-[#6b7280]">{post.excerpt}</p>
+                      <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
+                        {post.excerpt}
+                      </p>
                       <div className="flex items-center gap-4 text-xs text-[#6b7280]">
                         <div className="flex items-center gap-2">
                           <img

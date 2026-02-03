@@ -10,8 +10,7 @@ const recommendedPosts = [
     tags: ["Programming", "Frontend", "Coding"],
     author: "John Doe",
     date: "27 May 2025",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    image: "/dummy-home-article.png",
   },
   {
     id: 2,
@@ -21,8 +20,7 @@ const recommendedPosts = [
     tags: ["Programming", "Frontend", "Coding"],
     author: "John Doe",
     date: "27 May 2025",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    image: "/dummy-home-article.png",
   },
   {
     id: 3,
@@ -32,8 +30,7 @@ const recommendedPosts = [
     tags: ["Programming", "Frontend", "Coding"],
     author: "John Doe",
     date: "27 May 2025",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    image: "/dummy-home-article.png",
   },
   {
     id: 4,
@@ -43,8 +40,7 @@ const recommendedPosts = [
     tags: ["Programming", "Frontend", "Coding"],
     author: "John Doe",
     date: "27 May 2025",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    image: "/dummy-home-article.png",
   },
   {
     id: 5,
@@ -54,8 +50,7 @@ const recommendedPosts = [
     tags: ["Programming", "Frontend", "Coding"],
     author: "John Doe",
     date: "27 May 2025",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+    image: "/dummy-home-article.png",
   },
 ];
 
@@ -96,12 +91,12 @@ export default function Home() {
               {recommendedPosts.map((post) => (
                 <article
                   key={post.id}
-                  className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row"
+                  className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch"
                 >
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="h-[190px] w-full rounded-xl object-cover md:h-[160px] md:w-[260px]"
+                    className="h-[210px] w-full rounded-xl object-cover md:h-[200px] md:w-[260px]"
                   />
                   <div className="flex-1 space-y-3">
                     <h3 className="text-lg font-semibold leading-snug">
@@ -117,9 +112,7 @@ export default function Home() {
                         </span>
                       ))}
                     </div>
-                    <p className="text-sm text-[#4b5563]">
-                      {post.excerpt}
-                    </p>
+                    <p className="text-sm text-[#4b5563]">{post.excerpt}</p>
                     <div className="flex items-center gap-3 text-xs text-[#6b7280]">
                       <div className="flex items-center gap-2">
                         <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
@@ -138,37 +131,19 @@ export default function Home() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#6b7280]">
                       <div className="flex items-center gap-2">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M7 10v12" />
-                          <path d="M15 5.88L14 10h5.83a2 2 0 0 1 1.99 2.24l-1 7A2 2 0 0 1 18.85 21H7" />
-                          <path d="M7 10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3" />
-                        </svg>
+                        <img
+                          src="/like-icon.svg"
+                          alt="Likes"
+                          className="h-4 w-4"
+                        />
                         <span>20</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-                        </svg>
+                        <img
+                          src="/comment-icon.svg"
+                          alt="Comments"
+                          className="h-4 w-4"
+                        />
                         <span>20</span>
                       </div>
                     </div>
@@ -194,11 +169,15 @@ export default function Home() {
                 </svg>
                 Previous
               </button>
-              <button className="h-9 w-9 rounded-full border border-[#e7e9ee]">1</button>
+              <button className="h-9 w-9 rounded-full border border-[#e7e9ee]">
+                1
+              </button>
               <button className="h-9 w-9 rounded-full bg-[#0b8bd3] text-white">
                 2
               </button>
-              <button className="h-9 w-9 rounded-full border border-[#e7e9ee]">3</button>
+              <button className="h-9 w-9 rounded-full border border-[#e7e9ee]">
+                3
+              </button>
               <span>...</span>
               <button className="flex items-center gap-2 rounded-full px-4 py-2">
                 Next
@@ -221,55 +200,39 @@ export default function Home() {
 
           <aside className="w-full lg:w-[320px]">
             <div className="lg:sticky lg:top-8">
-              <h2 className="text-lg font-semibold">Most Liked</h2>
-              <div className="mt-6 space-y-6 lg:border-l lg:border-[#e7e9ee] lg:pl-6">
-                {mostLikedPosts.map((post) => (
-                  <article
-                    key={post.id}
-                    className="space-y-3 border-b border-[#e7e9ee] pb-6"
-                  >
-                    <h3 className="text-sm font-semibold text-[#111827]">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-[#6b7280]">{post.excerpt}</p>
-                    <div className="flex items-center gap-4 text-xs text-[#6b7280]">
-                      <div className="flex items-center gap-2">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M7 10v12" />
-                          <path d="M15 5.88L14 10h5.83a2 2 0 0 1 1.99 2.24l-1 7A2 2 0 0 1 18.85 21H7" />
-                          <path d="M7 10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3" />
-                        </svg>
-                        <span>20</span>
+              <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">
+                <h2 className="text-lg font-semibold">Most Liked</h2>
+                <div className="mt-6 space-y-6">
+                  {mostLikedPosts.map((post) => (
+                    <article
+                      key={post.id}
+                      className="space-y-3 border-b border-[#e7e9ee] pb-6"
+                    >
+                      <h3 className="text-sm font-semibold text-[#111827]">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-[#6b7280]">{post.excerpt}</p>
+                      <div className="flex items-center gap-4 text-xs text-[#6b7280]">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="/like-icon.svg"
+                            alt="Likes"
+                            className="h-4 w-4"
+                          />
+                          <span>20</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="/comment-icon.svg"
+                            alt="Comments"
+                            className="h-4 w-4"
+                          />
+                          <span>20</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-                        </svg>
-                        <span>20</span>
-                      </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ))}
+                </div>
               </div>
             </div>
           </aside>

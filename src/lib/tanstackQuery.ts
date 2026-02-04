@@ -84,6 +84,15 @@ export async function fetchUserById(userId: number) {
   return response.data;
 }
 
+export async function fetchMeProfile(token: string) {
+  const response = await apiClient.get<UserProfile>("/users/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+}
+
 export async function fetchPostComments(postId: number) {
   const response = await apiClient.get<CommentItem[]>(
     `/posts/${postId}/comments`

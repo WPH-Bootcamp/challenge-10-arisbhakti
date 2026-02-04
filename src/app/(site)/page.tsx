@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   fetchMostLikedPosts,
   fetchRecommendedPosts,
   fetchSearchPosts,
+  fetchUserById,
 } from "@/lib/tanstackQuery";
 import { toggleLikePost } from "@/lib/api";
 
@@ -122,6 +123,27 @@ export default function Home() {
       ...post,
       excerpt: stripHtml(post.content),
     })) ?? [];
+  const displayedPosts = isSearchMode ? searchPosts : recommendedPosts;
+  const authorIds = useMemo(() => {
+    const ids = displayedPosts.map((post) => post.author.id);
+    return Array.from(new Set(ids));
+  }, [displayedPosts]);
+  const authorQueries = useQueries({
+    queries: authorIds.map((id) => ({
+      queryKey: ["post-author", id],
+      queryFn: () => fetchUserById(id),
+      enabled: authorIds.length > 0,
+    })),
+  });
+  const authorMap = useMemo(() => {
+    const map = new Map<number, { avatarUrl?: string }>();
+    authorQueries.forEach((query, index) => {
+      if (query.data) {
+        map.set(authorIds[index], query.data);
+      }
+    });
+    return map;
+  }, [authorQueries, authorIds]);
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-6 py-10">
@@ -231,7 +253,10 @@ export default function Home() {
                       >
                         <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
                           <img
-                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                            src={
+                              authorMap.get(post.author.id)?.avatarUrl ||
+                              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                            }
                             alt={post.author.name}
                             className="h-full w-full object-cover"
                           />
@@ -348,7 +373,10 @@ export default function Home() {
                       >
                         <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
                           <img
-                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                            src={
+                              authorMap.get(post.author.id)?.avatarUrl ||
+                              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                            }
                             alt={post.author.name}
                             className="h-full w-full object-cover"
                           />

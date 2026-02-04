@@ -10,7 +10,7 @@ import {
   fetchUserById,
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
-import { deletePost } from "@/lib/api";
+import { changePassword, deletePost, updateProfile } from "@/lib/api";
 import {
   Dialog,
   DialogClose,
@@ -40,6 +40,28 @@ export default function ProfilePage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePostId, setDeletePostId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    headline: "",
+    avatarFile: null as File | null,
+    avatarPreview: "",
+  });
+  const [editErrors, setEditErrors] = useState({
+    name: "",
+    headline: "",
+    avatar: "",
+  });
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState<
+    Partial<Record<keyof typeof passwordForm, string>>
+  >({});
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -132,6 +154,160 @@ export default function ProfilePage() {
     }
   };
 
+  const handleOpenEdit = () => {
+    setEditForm({
+      name: profile.name || "",
+      headline: headline || "",
+      avatarFile: null,
+      avatarPreview: avatarSrc,
+    });
+    setEditErrors({ name: "", headline: "", avatar: "" });
+    setEditOpen(true);
+  };
+
+  const handleEditChange = (field: "name" | "headline", value: string) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+    if (editErrors[field]) {
+      setEditErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleEditAvatar = (file?: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setEditErrors((prev) => ({
+        ...prev,
+        avatar: "Avatar must be an image file",
+      }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setEditErrors((prev) => ({
+        ...prev,
+        avatar: "Avatar must be smaller than 5MB",
+      }));
+      return;
+    }
+    setEditForm((prev) => ({
+      ...prev,
+      avatarFile: file,
+      avatarPreview: URL.createObjectURL(file),
+    }));
+    setEditErrors((prev) => ({ ...prev, avatar: "" }));
+  };
+
+  const validateEditProfile = () => {
+    const nextErrors = { name: "", headline: "", avatar: "" };
+    if (!editForm.name.trim()) {
+      nextErrors.name = "Name is required";
+    }
+    if (!editForm.headline.trim()) {
+      nextErrors.headline = "Headline is required";
+    }
+    if (!editForm.avatarFile) {
+      nextErrors.avatar = "Avatar is required";
+    }
+    return nextErrors;
+  };
+
+  const handleSubmitEditProfile = async () => {
+    const validation = validateEditProfile();
+    if (validation.name || validation.headline || validation.avatar) {
+      setEditErrors(validation);
+      return;
+    }
+    if (!editForm.avatarFile) return;
+    setIsEditSubmitting(true);
+    try {
+      const updated = await updateProfile({
+        name: editForm.name.trim(),
+        headline: editForm.headline.trim(),
+        avatar: editForm.avatarFile,
+      });
+      queryClient.setQueryData(["profile", paramId], (prev: any) => ({
+        ...(prev ?? {}),
+        ...updated,
+      }));
+      queryClient.invalidateQueries({ queryKey: ["auth-user", updated.id] });
+      setToastMessage("Profile updated successfully.");
+      setShowToast(true);
+      setEditOpen(false);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "Failed to update profile."
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsEditSubmitting(false);
+    }
+  };
+
+  const handlePasswordChange = (
+    field: keyof typeof passwordForm,
+    value: string
+  ) => {
+    setPasswordForm((prev) => ({ ...prev, [field]: value }));
+    if (passwordErrors[field]) {
+      setPasswordErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validatePasswordForm = () => {
+    const nextErrors: Partial<Record<keyof typeof passwordForm, string>> = {};
+    if (!passwordForm.currentPassword.trim()) {
+      nextErrors.currentPassword = "Current password is required";
+    }
+    if (!passwordForm.newPassword.trim()) {
+      nextErrors.newPassword = "New password is required";
+    }
+    if (!passwordForm.confirmPassword.trim()) {
+      nextErrors.confirmPassword = "Confirm password is required";
+    }
+    if (
+      passwordForm.newPassword &&
+      passwordForm.confirmPassword &&
+      passwordForm.newPassword !== passwordForm.confirmPassword
+    ) {
+      nextErrors.confirmPassword = "Passwords do not match";
+    }
+    return nextErrors;
+  };
+
+  const handleSubmitPassword = async () => {
+    const validation = validatePasswordForm();
+    if (Object.keys(validation).length) {
+      setPasswordErrors(validation);
+      return;
+    }
+    setIsPasswordSubmitting(true);
+    try {
+      const response = await changePassword({
+        currentPassword: passwordForm.currentPassword.trim(),
+        newPassword: passwordForm.newPassword.trim(),
+        confirmPassword: passwordForm.confirmPassword.trim(),
+      });
+      setToastMessage(response.message || "Password updated successfully");
+      setShowToast(true);
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      setPasswordErrors({});
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "Failed to update password."
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsPasswordSubmitting(false);
+    }
+  };
+
   if (isProfileLoading) {
     return (
       <main className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -184,6 +360,10 @@ export default function ProfilePage() {
             <a
               href="#"
               className="text-sm font-semibold text-[#0b8bd3] underline underline-offset-2 cursor-pointer"
+              onClick={(event) => {
+                event.preventDefault();
+                handleOpenEdit();
+              }}
             >
               Edit Profile
             </a>
@@ -411,7 +591,15 @@ export default function ProfilePage() {
                   <input
                     type="password"
                     placeholder="Enter current password"
-                    className="h-12 w-full rounded-xl border border-[#d9dce3] px-4 pr-11 text-sm outline-none transition focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+                    value={passwordForm.currentPassword}
+                    onChange={(event) =>
+                      handlePasswordChange("currentPassword", event.target.value)
+                    }
+                    className={`h-12 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition focus:ring-2 ${
+                      passwordErrors.currentPassword
+                        ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+                        : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                    }`}
                   />
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
                     <svg
@@ -430,6 +618,11 @@ export default function ProfilePage() {
                     </svg>
                   </span>
                 </div>
+                {passwordErrors.currentPassword && (
+                  <p className="text-xs text-[#f43f5e]">
+                    {passwordErrors.currentPassword}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -438,7 +631,15 @@ export default function ProfilePage() {
                   <input
                     type="password"
                     placeholder="Enter new password"
-                    className="h-12 w-full rounded-xl border border-[#d9dce3] px-4 pr-11 text-sm outline-none transition focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+                    value={passwordForm.newPassword}
+                    onChange={(event) =>
+                      handlePasswordChange("newPassword", event.target.value)
+                    }
+                    className={`h-12 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition focus:ring-2 ${
+                      passwordErrors.newPassword
+                        ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+                        : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                    }`}
                   />
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
                     <svg
@@ -457,6 +658,11 @@ export default function ProfilePage() {
                     </svg>
                   </span>
                 </div>
+                {passwordErrors.newPassword && (
+                  <p className="text-xs text-[#f43f5e]">
+                    {passwordErrors.newPassword}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -467,7 +673,15 @@ export default function ProfilePage() {
                   <input
                     type="password"
                     placeholder="Enter confirm new password"
-                    className="h-12 w-full rounded-xl border border-[#d9dce3] px-4 pr-11 text-sm outline-none transition focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+                    value={passwordForm.confirmPassword}
+                    onChange={(event) =>
+                      handlePasswordChange("confirmPassword", event.target.value)
+                    }
+                    className={`h-12 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition focus:ring-2 ${
+                      passwordErrors.confirmPassword
+                        ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+                        : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                    }`}
                   />
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
                     <svg
@@ -486,13 +700,20 @@ export default function ProfilePage() {
                     </svg>
                   </span>
                 </div>
+                {passwordErrors.confirmPassword && (
+                  <p className="text-xs text-[#f43f5e]">
+                    {passwordErrors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               <button
                 type="button"
-                className="h-12 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white"
+                onClick={handleSubmitPassword}
+                disabled={isPasswordSubmitting}
+                className="h-12 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-70"
               >
-                Update Password
+                {isPasswordSubmitting ? "Updating..." : "Update Password"}
               </button>
             </form>
           </div>
@@ -735,6 +956,128 @@ export default function ProfilePage() {
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                aria-label="Close"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </DialogClose>
+          </DialogHeader>
+
+          <div className="mt-4 space-y-4">
+            <div className="flex justify-center">
+              <label className="group relative cursor-pointer">
+                <div className="h-20 w-20 overflow-hidden rounded-full bg-[#e5e7eb]">
+                  <img
+                    src={editForm.avatarPreview || avatarSrc}
+                    alt={profile.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#0b8bd3] text-white">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 7h2l2-2h6l2 2h2v12H5z" />
+                    <circle cx="12" cy="13" r="3" />
+                  </svg>
+                </div>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={(event) =>
+                    handleEditAvatar(event.target.files?.[0])
+                  }
+                />
+              </label>
+            </div>
+            {editErrors.avatar && (
+              <p className="text-center text-xs text-[#f43f5e]">
+                {editErrors.avatar}
+              </p>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Name</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(event) =>
+                  handleEditChange("name", event.target.value)
+                }
+                className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-2 ${
+                  editErrors.name
+                    ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+                    : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                }`}
+              />
+              {editErrors.name && (
+                <p className="text-xs text-[#f43f5e]">{editErrors.name}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Profile Headline</label>
+              <input
+                type="text"
+                value={editForm.headline}
+                onChange={(event) =>
+                  handleEditChange("headline", event.target.value)
+                }
+                className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-2 ${
+                  editErrors.headline
+                    ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+                    : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                }`}
+              />
+              {editErrors.headline && (
+                <p className="text-xs text-[#f43f5e]">
+                  {editErrors.headline}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSubmitEditProfile}
+              disabled={isEditSubmitting}
+              className="h-12 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-70"
+            >
+              {isEditSubmitting ? "Updating..." : "Update Profile"}
+            </button>
           </div>
         </DialogContent>
       </Dialog>

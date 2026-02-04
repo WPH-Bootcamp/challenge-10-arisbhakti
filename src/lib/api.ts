@@ -211,3 +211,79 @@ export async function deletePost(postId: number) {
     throw error;
   }
 }
+
+export async function changePassword(payload: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  try {
+    const response = await apiClient.patch<{ success: boolean; message: string }>(
+      "/users/password",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to update password.";
+      throw new Error(message);
+    }
+    throw error;
+  }
+}
+
+export async function updateProfile(payload: {
+  name: string;
+  headline: string;
+  avatar: File;
+}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("name", payload.name);
+  formData.append("headline", payload.headline);
+  formData.append("avatar", payload.avatar);
+  try {
+    const response = await apiClient.patch(
+      "/users/profile",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data as {
+      id: number;
+      name: string;
+      email: string;
+      username: string;
+      headline: string;
+      avatarUrl: string;
+      avatarPublicId: string;
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to update profile.";
+      throw new Error(message);
+    }
+    throw error;
+  }
+}

@@ -33,7 +33,8 @@ export default function ProfilePage() {
   const params = useParams();
   const paramId = params?.id?.toString();
   const [localProfileId, setLocalProfileId] = useState<number | null>(null);
-  const isMe = paramId === "me" || (localProfileId && paramId === `${localProfileId}`);
+  const isMe =
+    paramId === "me" || (localProfileId && paramId === `${localProfileId}`);
   const numericId = Number(paramId);
   const [activeTab, setActiveTab] = useState<"posts" | "password">("posts");
   const [statsOpen, setStatsOpen] = useState(false);
@@ -156,7 +157,7 @@ export default function ProfilePage() {
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
       setToastMessage(
-        error instanceof Error ? error.message : "Failed to delete post."
+        error instanceof Error ? error.message : "Failed to delete post.",
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -248,7 +249,7 @@ export default function ProfilePage() {
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
       setToastMessage(
-        error instanceof Error ? error.message : "Failed to update profile."
+        error instanceof Error ? error.message : "Failed to update profile.",
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -259,7 +260,7 @@ export default function ProfilePage() {
 
   const handlePasswordChange = (
     field: keyof typeof passwordForm,
-    value: string
+    value: string,
   ) => {
     setPasswordForm((prev) => ({ ...prev, [field]: value }));
     if (passwordErrors[field]) {
@@ -312,7 +313,7 @@ export default function ProfilePage() {
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
       setToastMessage(
-        error instanceof Error ? error.message : "Failed to update password."
+        error instanceof Error ? error.message : "Failed to update password.",
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -606,7 +607,10 @@ export default function ProfilePage() {
                     placeholder="Enter current password"
                     value={passwordForm.currentPassword}
                     onChange={(event) =>
-                      handlePasswordChange("currentPassword", event.target.value)
+                      handlePasswordChange(
+                        "currentPassword",
+                        event.target.value,
+                      )
                     }
                     className={`h-12 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition focus:ring-2 ${
                       passwordErrors.currentPassword
@@ -688,7 +692,10 @@ export default function ProfilePage() {
                     placeholder="Enter confirm new password"
                     value={passwordForm.confirmPassword}
                     onChange={(event) =>
-                      handlePasswordChange("confirmPassword", event.target.value)
+                      handlePasswordChange(
+                        "confirmPassword",
+                        event.target.value,
+                      )
                     }
                     className={`h-12 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition focus:ring-2 ${
                       passwordErrors.confirmPassword
@@ -767,14 +774,16 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setStatsTab("like")}
-                  className={`flex flex-1 items-center justify-center gap-2 py-3 font-semibold transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-2 py-3 font-semibold transition-colors  ${
                     statsTab === "like"
                       ? "text-primary-300"
                       : "text-neutral-950"
                   }`}
                 >
                   <img
-                    src={statsTab === "like" ? "/liked-icon.svg" : "/like-icon.svg"}
+                    src={
+                      statsTab === "like" ? "/liked-icon.svg" : "/like-icon.svg"
+                    }
                     alt="Like"
                     className="h-4 w-4"
                   />
@@ -854,9 +863,7 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-[#6b7280]">
-                      No likes yet.
-                    </p>
+                    <p className="text-sm text-[#6b7280]">No likes yet.</p>
                   )}
                 </div>
               ) : (
@@ -909,9 +916,7 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-[#6b7280]">
-                      No comments yet.
-                    </p>
+                    <p className="text-sm text-[#6b7280]">No comments yet.</p>
                   )}
                 </div>
               )}
@@ -949,9 +954,7 @@ export default function ProfilePage() {
           </DialogHeader>
 
           <div className="mt-3">
-            <p className="text-sm text-[#6b7280]">
-              Are you sure to delete?
-            </p>
+            <p className="text-sm text-[#6b7280]">Are you sure to delete?</p>
             <div className="mt-6 flex items-center justify-end gap-4">
               <button
                 type="button"
@@ -1077,9 +1080,7 @@ export default function ProfilePage() {
                 }`}
               />
               {editErrors.headline && (
-                <p className="text-xs text-[#f43f5e]">
-                  {editErrors.headline}
-                </p>
+                <p className="text-xs text-[#f43f5e]">{editErrors.headline}</p>
               )}
             </div>
 
@@ -1095,9 +1096,7 @@ export default function ProfilePage() {
         </DialogContent>
       </Dialog>
 
-      {showToast && (
-        <Toast message={toastMessage} />
-      )}
+      {showToast && <Toast message={toastMessage} />}
     </main>
   );
 }

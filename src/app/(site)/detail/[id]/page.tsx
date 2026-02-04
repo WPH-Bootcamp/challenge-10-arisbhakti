@@ -80,7 +80,7 @@ export default function DetailPage() {
       queryClient.invalidateQueries({ queryKey: ["post-detail", post.id] });
     } catch (error) {
       setToastMessage(
-        error instanceof Error ? error.message : "Failed to like post."
+        error instanceof Error ? error.message : "Failed to like post.",
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -184,7 +184,7 @@ export default function DetailPage() {
         (prev: typeof comments) => {
           const current = prev ?? [];
           return [response as any, ...current];
-        }
+        },
       );
       if (isModal) {
         setModalCommentValue("");
@@ -273,7 +273,7 @@ export default function DetailPage() {
           <button
             type="button"
             onClick={handleToggleLike}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             <img
               src={
@@ -598,9 +598,7 @@ export default function DetailPage() {
         )}
       </section>
 
-      {showToast && (
-        <Toast message={toastMessage} />
-      )}
+      {showToast && <Toast message={toastMessage} />}
     </main>
   );
 }

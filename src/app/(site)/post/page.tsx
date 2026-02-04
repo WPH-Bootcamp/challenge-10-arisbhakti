@@ -7,8 +7,9 @@ import { fetchPostDetail } from "@/lib/tanstackQuery";
 
 export default function WritePostPage() {
   const searchParams = useSearchParams();
-  const postId = Number(searchParams.get("id"));
-  const isEdit = Number.isFinite(postId);
+  const rawId = searchParams.get("id");
+  const postId = rawId ? Number(rawId) : NaN;
+  const isEdit = Number.isFinite(postId) && postId > 0;
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["post-detail", postId],

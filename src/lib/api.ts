@@ -171,3 +171,17 @@ export async function updatePost(postId: number, payload: UpdatePostPayload) {
   );
   return response.data;
 }
+
+export async function toggleLikePost(postId: number) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const response = await apiClient.post(`/posts/${postId}/like`, "", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
+  });
+  return response.data;
+}

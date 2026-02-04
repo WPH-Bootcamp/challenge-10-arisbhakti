@@ -1,14 +1,57 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { fetchMostLikedPosts, fetchRecommendedPosts } from "@/lib/tanstackQuery";
+import { toggleLikePost } from "@/lib/api";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
 export default function Home() {
   const [page, setPage] = useState(1);
+  const [likedIds, setLikedIds] = useState<number[]>([]);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("likedPostIds");
+    if (stored) {
+      try {
+        setLikedIds(JSON.parse(stored));
+      } catch {
+        setLikedIds([]);
+      }
+    }
+  }, []);
+
+  const updateLikedStorage = (next: number[]) => {
+    setLikedIds(next);
+    localStorage.setItem("likedPostIds", JSON.stringify(next));
+  };
+
+  const handleToggleLike = async (postId: number) => {
+    try {
+      await toggleLikePost(postId);
+      const isLiked = likedIds.includes(postId);
+      const next = isLiked
+        ? likedIds.filter((id) => id !== postId)
+        : [...likedIds, postId];
+      updateLikedStorage(next);
+      setToastMessage(isLiked ? "Unliked post." : "Liked post.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      queryClient.invalidateQueries({ queryKey: ["recommended-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["most-liked-posts"] });
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "Failed to like post."
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   const {
     data: recommendedData,
@@ -145,14 +188,22 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-[#6b7280]">
-                      <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLike(post.id)}
+                        className="flex items-center gap-2"
+                      >
                         <img
-                          src="/like-icon.svg"
+                          src={
+                            likedIds.includes(post.id)
+                              ? "/liked-icon.svg"
+                              : "/like-icon.svg"
+                          }
                           alt="Likes"
                           className="h-4 w-4"
                         />
                         <span className="text-neutral-600">{post.likes}</span>
-                      </div>
+                      </button>
                       <div className="flex items-center gap-2">
                         <img
                           src="/comment-icon.svg"
@@ -272,14 +323,22 @@ export default function Home() {
                       {post.excerpt}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-[#6b7280]">
-                      <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLike(post.id)}
+                        className="flex items-center gap-2"
+                      >
                         <img
-                          src="/like-icon.svg"
+                          src={
+                            likedIds.includes(post.id)
+                              ? "/liked-icon.svg"
+                              : "/like-icon.svg"
+                          }
                           alt="Likes"
                           className="h-4 w-4"
                         />
                         <span className="text-neutral-600">{post.likes}</span>
-                      </div>
+                      </button>
                       <div className="flex items-center gap-2">
                         <img
                           src="/comment-icon.svg"
@@ -296,6 +355,11 @@ export default function Home() {
           </div>
         </aside>
       </div>
+      {showToast && (
+        <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
+          {toastMessage}
+        </div>
+      )}
     </main>
   );
 }

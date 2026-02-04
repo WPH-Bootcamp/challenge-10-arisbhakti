@@ -75,8 +75,8 @@ export default function RichTextEditor({
   useEffect(() => {
     if (!quillRef.current || !isReady) return;
     if (initialContent === undefined) return;
-    if (didEditRef.current) return;
     if (initialContent === lastContentRef.current) return;
+    didEditRef.current = false;
     quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
     lastContentRef.current = initialContent;
   }, [initialContent, isReady]);

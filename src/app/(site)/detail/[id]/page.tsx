@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import {
   fetchUserById,
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
-import { createComment } from "@/lib/api";
+import { createComment, toggleLikePost } from "@/lib/api";
 import { getAuthPayload } from "@/lib/auth";
 import {
   Dialog,
@@ -40,10 +40,51 @@ export default function DetailPage() {
   const [modalCommentValue, setModalCommentValue] = useState("");
   const [modalCommentError, setModalCommentError] = useState("");
   const [isModalSubmitting, setIsModalSubmitting] = useState(false);
+  const [likedIds, setLikedIds] = useState<number[]>([]);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const authPayload = getAuthPayload(token);
   const authUserId = authPayload?.id;
+
+  useEffect(() => {
+    const stored = localStorage.getItem("likedPostIds");
+    if (stored) {
+      try {
+        setLikedIds(JSON.parse(stored));
+      } catch {
+        setLikedIds([]);
+      }
+    }
+  }, []);
+
+  const updateLikedStorage = (next: number[]) => {
+    setLikedIds(next);
+    localStorage.setItem("likedPostIds", JSON.stringify(next));
+  };
+
+  const handleToggleLike = async () => {
+    if (!post) return;
+    try {
+      const isLiked = likedIds.includes(post.id);
+      const next = isLiked
+        ? likedIds.filter((id) => id !== post.id)
+        : [...likedIds, post.id];
+      await toggleLikePost(post.id);
+      updateLikedStorage(next);
+      setToastMessage(isLiked ? "Unliked post." : "Liked post.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      queryClient.invalidateQueries({ queryKey: ["post-detail", post.id] });
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "Failed to like post."
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
 
   const {
     data: post,
@@ -228,10 +269,22 @@ export default function DetailPage() {
           <span>{formatDate(post.createdAt)}</span>
         </div>
         <div className="flex items-center gap-4 border-y border-[#eef0f4] py-3 text-xs text-[#6b7280]">
-          <div className="flex items-center gap-2">
-            <img src="/like-icon.svg" alt="Likes" className="h-4 w-4" />
+          <button
+            type="button"
+            onClick={handleToggleLike}
+            className="flex items-center gap-2"
+          >
+            <img
+              src={
+                likedIds.includes(post.id)
+                  ? "/liked-icon.svg"
+                  : "/like-icon.svg"
+              }
+              alt="Likes"
+              className="h-4 w-4"
+            />
             <span>{post.likes}</span>
-          </div>
+          </button>
           <div className="flex items-center gap-2">
             <img src="/comment-icon.svg" alt="Comments" className="h-4 w-4" />
             <span>{comments?.length ?? 0}</span>
@@ -543,6 +596,12 @@ export default function DetailPage() {
           </p>
         )}
       </section>
+
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-full bg-[#111827] px-5 py-3 text-sm text-white shadow-lg">
+          {toastMessage}
+        </div>
+      )}
     </main>
   );
 }

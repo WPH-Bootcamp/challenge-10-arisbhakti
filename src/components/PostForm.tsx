@@ -50,6 +50,19 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
     if (mode === "edit" && postId) hydratedRef.current = postId;
   }, [initialData, mode, postId]);
 
+  useEffect(() => {
+    if (mode !== "write" || initialData) return;
+    setTitle("");
+    setContent("");
+    setEditorInitial("");
+    setTags([]);
+    setTagInput("");
+    setImagePreview(null);
+    setImageFile(null);
+    setRemoveImage(false);
+    setErrors({});
+  }, [initialData, mode]);
+
   const filteredSuggestions = useMemo(() => {
     const query = tagInput.trim().toLowerCase();
     if (!query) return [];
@@ -181,6 +194,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
       <div className="space-y-2">
         <label className="text-sm font-semibold">Content</label>
         <RichTextEditor
+          key={`editor-${mode}-${postId ?? "new"}`}
           error={!!errors.content}
           initialContent={editorInitial}
           onChange={(value) => {

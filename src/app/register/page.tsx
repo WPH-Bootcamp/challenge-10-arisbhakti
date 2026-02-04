@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { registerUser } from "@/lib/api";
+import Toast from "@/components/Toast";
 
 type FieldErrors = {
   name?: string;
@@ -316,9 +317,7 @@ export default function RegisterPage() {
       </div>
 
       {showToast && (
-        <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
-          Register successful, please login.
-        </div>
+        <Toast message="Register successful, please login." />
       )}
     </div>
   );

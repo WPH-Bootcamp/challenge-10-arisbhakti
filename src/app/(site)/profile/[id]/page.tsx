@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Toast from "@/components/Toast";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
@@ -1095,9 +1096,7 @@ export default function ProfilePage() {
       </Dialog>
 
       {showToast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-full bg-[#111827] px-5 py-3 text-sm text-white shadow-lg">
-          {toastMessage}
-        </div>
+        <Toast message={toastMessage} />
       )}
     </main>
   );

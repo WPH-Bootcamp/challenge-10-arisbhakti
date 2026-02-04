@@ -10,6 +10,7 @@ import {
   fetchUserById,
 } from "@/lib/tanstackQuery";
 import { toggleLikePost } from "@/lib/api";
+import Toast from "@/components/Toast";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
@@ -573,9 +574,7 @@ export default function Home() {
         )}
       </div>
       {showToast && (
-        <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
-          {toastMessage}
-        </div>
+        <Toast message={toastMessage} />
       )}
     </main>
   );

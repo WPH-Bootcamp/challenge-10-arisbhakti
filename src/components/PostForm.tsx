@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import RichTextEditor from "@/components/RichTextEditor";
 import { createPost, updatePost } from "@/lib/api";
+import Toast from "@/components/Toast";
 
 const suggestions = ["Programming", "Frontend", "Coding", "Design", "UI UX"];
 
@@ -395,9 +396,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
         <p className="text-center text-xs text-[#f43f5e]">{errors.general}</p>
       )}
       {showToast && (
-        <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
-          {toastMessage}
-        </div>
+        <Toast message={toastMessage} />
       )}
     </form>
   );

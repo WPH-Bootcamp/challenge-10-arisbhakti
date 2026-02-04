@@ -25,6 +25,9 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
   );
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [editorInitial, setEditorInitial] = useState<string | undefined>(
+    undefined,
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -39,6 +42,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
     if (mode === "edit" && postId && hydratedRef.current === postId) return;
     setTitle(initialData.title ?? "");
     setContent(initialData.content ?? "");
+    setEditorInitial(initialData.content ?? "");
     setTags(initialData.tags ?? []);
     if (initialData.imageUrl) {
       setImagePreview(initialData.imageUrl);
@@ -131,6 +135,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
         setToastMessage("Post uploaded successfully.");
         setTitle("");
         setContent("");
+        setEditorInitial("");
         setTags([]);
         setTagInput("");
         handleRemoveImage();
@@ -177,7 +182,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
         <label className="text-sm font-semibold">Content</label>
         <RichTextEditor
           error={!!errors.content}
-          initialContent={content}
+          initialContent={editorInitial}
           onChange={(value) => {
             setContent(value);
             if (errors.content) setErrors((prev) => ({ ...prev, content: "" }));
@@ -338,7 +343,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
                 }
               }}
               placeholder={tags.length ? "" : "Enter your tags"}
-              className="min-w-[140px] flex-1 py-2 text-sm outline-none"
+              className="min-w-35 flex-1 py-2 text-sm outline-none"
             />
           </div>
         </div>

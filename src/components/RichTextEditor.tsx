@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "quill/dist/quill.snow.css";
 
 type RichTextEditorProps = {
@@ -28,6 +28,7 @@ export default function RichTextEditor({
   const quillRef = useRef<any>(null);
   const lastContentRef = useRef<string | undefined>(undefined);
   const didEditRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +54,7 @@ export default function RichTextEditor({
         quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
         lastContentRef.current = initialContent;
       }
+      setIsReady(true);
 
       quillRef.current.on("text-change", () => {
         didEditRef.current = true;
@@ -71,13 +73,13 @@ export default function RichTextEditor({
   }, []);
 
   useEffect(() => {
-    if (!quillRef.current) return;
+    if (!quillRef.current || !isReady) return;
     if (initialContent === undefined) return;
     if (didEditRef.current) return;
     if (initialContent === lastContentRef.current) return;
     quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
     lastContentRef.current = initialContent;
-  }, [initialContent]);
+  }, [initialContent, isReady]);
 
   return (
     <div

@@ -74,9 +74,13 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userProfile");
     setIsLogin(false);
     setUserLabel("User");
     setUserId(null);
+    setProfileAvatar(null);
+    window.dispatchEvent(new Event("profile-updated"));
+    router.push("/login");
   };
 
   const avatarAlt = useMemo(() => userLabel || "User", [userLabel]);
@@ -137,7 +141,10 @@ export default function Header() {
 
           {isLogin && (
             <div className="hidden items-center gap-4 sm:flex">
-              <button className="flex items-center gap-2 text-sm font-semibold text-primary-300">
+              <button
+                className="flex items-center gap-2 text-sm font-semibold text-primary-300 cursor-pointer"
+                onClick={() => router.push("/post")}
+              >
                 <img
                   src="/write-post-icon.svg"
                   alt="Write Post"
@@ -161,7 +168,7 @@ export default function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => router.push("/profile/me")}>
                     <img
                       src="/profile-icon.svg"
                       alt="Profile"

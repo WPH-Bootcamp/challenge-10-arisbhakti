@@ -185,3 +185,29 @@ export async function toggleLikePost(postId: number) {
   });
   return response.data;
 }
+
+export async function deletePost(postId: number) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  try {
+    const response = await apiClient.delete<{ success: boolean }>(
+      `/posts/${postId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to delete post.";
+      throw new Error(message);
+    }
+    throw error;
+  }
+}

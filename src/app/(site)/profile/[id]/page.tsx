@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchMeProfile,
   fetchPostComments,
@@ -10,6 +10,7 @@ import {
   fetchUserById,
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
+import { deletePost } from "@/lib/api";
 import {
   Dialog,
   DialogClose,
@@ -36,7 +37,13 @@ export default function ProfilePage() {
   const [statsOpen, setStatsOpen] = useState(false);
   const [statsPostId, setStatsPostId] = useState<number | null>(null);
   const [statsTab, setStatsTab] = useState<"like" | "comment">("like");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePostId, setDeletePostId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -97,6 +104,32 @@ export default function ProfilePage() {
     setStatsPostId(postId);
     setStatsTab("like");
     setStatsOpen(true);
+  };
+
+  const handleOpenDelete = (postId: number) => {
+    setDeletePostId(postId);
+    setDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletePostId) return;
+    setIsDeleting(true);
+    try {
+      await deletePost(deletePostId);
+      setToastMessage("Post deleted successfully.");
+      setShowToast(true);
+      setDeleteOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["profile-posts"] });
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "Failed to delete post."
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (isProfileLoading) {
@@ -345,6 +378,10 @@ export default function ProfilePage() {
                         <a
                           href="#"
                           className="font-semibold text-[#ef4444] underline underline-offset-2"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            handleOpenDelete(post.id);
+                          }}
                         >
                           Delete
                         </a>
@@ -648,6 +685,65 @@ export default function ProfilePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete</DialogTitle>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                aria-label="Close"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </DialogClose>
+          </DialogHeader>
+
+          <div className="mt-3">
+            <p className="text-sm text-[#6b7280]">
+              Are you sure to delete?
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-4">
+              <button
+                type="button"
+                className="text-sm font-semibold text-[#111827]"
+                onClick={() => setDeleteOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="flex h-11 items-center justify-center rounded-full bg-[#f43f5e] px-7 text-sm font-semibold text-white disabled:opacity-70"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-full bg-[#111827] px-5 py-3 text-sm text-white shadow-lg">
+          {toastMessage}
+        </div>
+      )}
     </main>
   );
 }

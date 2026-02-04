@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { fetchUserById } from "@/lib/tanstackQuery";
 import { getAuthPayload } from "@/lib/auth";
+import Link from "next/link";
 
 export default function Header() {
   const [isLogin, setIsLogin] = useState(false);
@@ -59,16 +60,18 @@ export default function Header() {
   return (
     <header className="border-b border-[#e7e9ee] bg-white text-neutral-950">
       <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <img
-            src="/your-logo.svg"
-            alt="Your Logo"
-            className="w-5 h-[22px] md:w-[30px] md:h-[32px]"
-          />
-          <span className="text-base leading-6 font-bold md:text-2xl md:leading-9">
-            Your Logo
-          </span>
-        </div>
+        <Link href="/">
+          <div id="logo-div" className="flex items-center gap-3">
+            <img
+              src="/your-logo.svg"
+              alt="Your Logo"
+              className="w-5 h-[22px] md:w-[30px] md:h-[32px]"
+            />
+            <span className="text-base leading-6 font-bold md:text-2xl md:leading-9">
+              Your Logo
+            </span>
+          </div>
+        </Link>
 
         <div className="hidden w-full max-w-md items-center gap-3 rounded-full border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex">
           <img src="/search-icon.png" alt="Search" className="h-4 w-4" />

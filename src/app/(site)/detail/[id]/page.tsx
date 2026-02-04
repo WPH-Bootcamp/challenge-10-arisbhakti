@@ -209,7 +209,10 @@ export default function DetailPage() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
-          <div className="flex items-center gap-2">
+          <Link
+            href={`/profile/${post.author.id}`}
+            className="flex items-center gap-2"
+          >
             <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
               <img
                 src={author?.avatarUrl || "/dummy-home-article.png"}
@@ -220,7 +223,7 @@ export default function DetailPage() {
             <span className="text-sm font-medium text-[#111827]">
               {author?.name || post.author.name}
             </span>
-          </div>
+          </Link>
           <span>•</span>
           <span>{formatDate(post.createdAt)}</span>
         </div>
@@ -254,19 +257,24 @@ export default function DetailPage() {
           Comments({comments?.length ?? 0})
         </h2>
         <div className="mt-4 flex items-center gap-3">
-          <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
-            <img
-              src={
-                currentUser?.avatarUrl ||
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-              }
-              alt={currentUser?.name || "User"}
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <span className="text-sm font-semibold">
-            {currentUser?.name || authPayload?.username || "User"}
-          </span>
+          <Link
+            href={`/profile/${currentUser?.id ?? "me"}`}
+            className="flex items-center gap-2"
+          >
+            <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+              <img
+                src={
+                  currentUser?.avatarUrl ||
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                }
+                alt={currentUser?.name || "User"}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <span className="text-sm font-semibold">
+              {currentUser?.name || authPayload?.username || "User"}
+            </span>
+          </Link>
         </div>
         <p className="mt-3 text-sm text-[#6b7280]">Give your Comments</p>
         <div className="mt-3 space-y-4">
@@ -318,20 +326,26 @@ export default function DetailPage() {
         <div className="mt-8 space-y-6 border-t border-[#eef0f4] pt-6">
           {latestComments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
-            <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
-              <img
-                src={
-                  comment.author.avatarUrl ||
-                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                }
-                alt={comment.author.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
+              <Link
+                href={`/profile/${comment.author.id}`}
+                className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]"
+              >
+                <img
+                  src={
+                    comment.author.avatarUrl ||
+                    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                  }
+                  alt={comment.author.name}
+                  className="h-full w-full object-cover"
+                />
+              </Link>
               <div className="flex-1">
-                <div className="flex items-center gap-2 text-sm font-semibold">
+                <Link
+                  href={`/profile/${comment.author.id}`}
+                  className="flex items-center gap-2 text-sm font-semibold"
+                >
                   {comment.author.name}
-                </div>
+                </Link>
                 <p className="text-xs text-[#6b7280]">
                   {formatDate(comment.createdAt)}
                 </p>
@@ -428,7 +442,10 @@ export default function DetailPage() {
                     key={`modal-${comment.id}`}
                     className="flex gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
                   >
-                    <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+                    <Link
+                      href={`/profile/${comment.author.id}`}
+                      className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]"
+                    >
                       <img
                         src={
                           comment.author.avatarUrl ||
@@ -437,11 +454,14 @@ export default function DetailPage() {
                         alt={comment.author.name}
                         className="h-full w-full object-cover"
                       />
-                    </div>
+                    </Link>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold">
+                      <Link
+                        href={`/profile/${comment.author.id}`}
+                        className="text-sm font-semibold"
+                      >
                         {comment.author.name}
-                      </div>
+                      </Link>
                       <p className="text-xs text-[#6b7280]">
                         {formatDate(comment.createdAt)}
                       </p>

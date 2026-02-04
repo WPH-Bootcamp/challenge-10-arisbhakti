@@ -120,7 +120,10 @@ export default function Home() {
                       {post.excerpt}
                     </p>
                     <div className="flex items-center gap-3 text-xs text-[#6b7280]">
-                      <div className="flex items-center gap-2">
+                      <Link
+                        href={`/profile/${post.author.id}`}
+                        className="flex items-center gap-2"
+                      >
                         <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
                           <img
                             src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
@@ -131,7 +134,7 @@ export default function Home() {
                         <span className="text-sm font-medium text-[#111827]">
                           {post.author.name}
                         </span>
-                      </div>
+                      </Link>
                       <span>•</span>
                       <span className="text-neutral-600">
                         {new Date(post.createdAt).toLocaleDateString("en-GB", {

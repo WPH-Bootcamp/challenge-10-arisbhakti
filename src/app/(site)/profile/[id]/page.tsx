@@ -31,7 +31,8 @@ const formatDate = (value: string) =>
 export default function ProfilePage() {
   const params = useParams();
   const paramId = params?.id?.toString();
-  const isMe = paramId === "me";
+  const [localProfileId, setLocalProfileId] = useState<number | null>(null);
+  const isMe = paramId === "me" || (localProfileId && paramId === `${localProfileId}`);
   const numericId = Number(paramId);
   const [activeTab, setActiveTab] = useState<"posts" | "password">("posts");
   const [statsOpen, setStatsOpen] = useState(false);
@@ -70,6 +71,15 @@ export default function ProfilePage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setToken(localStorage.getItem("token"));
+      const stored = localStorage.getItem("userProfile");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as { id?: number };
+          setLocalProfileId(parsed.id ?? null);
+        } catch {
+          setLocalProfileId(null);
+        }
+      }
     }
   }, []);
 

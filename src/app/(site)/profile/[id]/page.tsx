@@ -90,7 +90,11 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-10">
-      <section className="mx-auto w-full max-w-3xl rounded-2xl border border-[#e7e9ee] px-6 py-5">
+      <section
+        className={`mx-auto w-full max-w-3xl px-6 py-5 ${
+          isMe ? "rounded-2xl border border-[#e7e9ee]" : ""
+        }`}
+      >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 overflow-hidden rounded-full bg-[#e5e7eb]">
@@ -142,11 +146,7 @@ export default function ProfilePage() {
           </div>
         </section>
       ) : (
-        <section className="mx-auto mt-6 w-full max-w-3xl">
-          <div className="border-b border-[#e7e9ee] pb-3 text-sm font-semibold text-[#111827]">
-            Posts
-          </div>
-        </section>
+        <div className="mx-auto mt-6 w-full max-w-3xl border-b border-[#e7e9ee]" />
       )}
 
       <div className="mx-auto mt-5 w-full max-w-3xl">

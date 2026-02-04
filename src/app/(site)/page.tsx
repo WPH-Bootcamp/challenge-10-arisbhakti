@@ -402,7 +402,7 @@ export default function Home() {
           {!isSearchMode && (
             <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
             <button
-              className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={page === 1}
             >
@@ -429,7 +429,7 @@ export default function Home() {
                     pageNumber === page
                       ? "bg-[#0b8bd3] text-white"
                       : "text-neutral-600"
-                  }`}
+                  } cursor-pointer`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber}
@@ -437,7 +437,7 @@ export default function Home() {
               ))}
             </div>
             <button
-              className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
               onClick={() => setPage((prev) => Math.min(lastPage, prev + 1))}
               disabled={page === lastPage}
             >

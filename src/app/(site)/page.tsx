@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { fetchMostLikedPosts, fetchRecommendedPosts } from "@/lib/tanstackQuery";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
@@ -92,15 +93,19 @@ export default function Home() {
                   key={post.id}
                   className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch "
                 >
-                  <img
-                    src={post.imageUrl || "/dummy-home-article.png"}
-                    alt={post.title}
-                    className="hidden md:flex rounded-[6px] object-cover md:h-64.5 md:w-85"
-                  />
+                  <Link href={`/detail/${post.id}`} className="hidden md:flex">
+                    <img
+                      src={post.imageUrl || "/dummy-home-article.png"}
+                      alt={post.title}
+                      className="rounded-[6px] object-cover md:h-64.5 md:w-85"
+                    />
+                  </Link>
                   <div className="flex-1 space-y-3">
-                    <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5 ">
-                      {post.title}
-                    </h3>
+                    <Link href={`/detail/${post.id}`}>
+                      <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5">
+                        {post.title}
+                      </h3>
+                    </Link>
                     <div className="flex flex-wrap gap-2">
                       {post.tags.map((tag) => (
                         <span
@@ -255,9 +260,11 @@ export default function Home() {
                     key={post.id}
                     className="space-y-3 border-b border-[#e7e9ee] pb-6"
                   >
-                    <h3 className="text-base leading-7.5 -tracking-[0.03em] font-bold">
-                      {post.title}
-                    </h3>
+                    <Link href={`/detail/${post.id}`}>
+                      <h3 className="text-base leading-7.5 -tracking-[0.03em] font-bold">
+                        {post.title}
+                      </h3>
+                    </Link>
                     <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
                       {post.excerpt}
                     </p>

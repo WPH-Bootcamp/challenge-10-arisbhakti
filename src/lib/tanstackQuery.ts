@@ -50,3 +50,50 @@ export async function fetchMostLikedPosts(page = 1, limit = 3) {
   );
   return response.data;
 }
+
+export type PostDetail = RecommendedPost;
+
+export type UserProfile = {
+  id: number;
+  name: string;
+  email: string;
+  username: string;
+  headline?: string;
+  avatarUrl?: string;
+  avatarPublicId?: string;
+};
+
+export type CommentItem = {
+  id: number;
+  content: string;
+  createdAt: string;
+  author: UserProfile;
+};
+
+export type UserPostsResponse = UserProfile & {
+  posts: RecommendedResponse;
+};
+
+export async function fetchPostDetail(postId: number) {
+  const response = await apiClient.get<PostDetail>(`/posts/${postId}`);
+  return response.data;
+}
+
+export async function fetchUserById(userId: number) {
+  const response = await apiClient.get<UserProfile>(`/users/${userId}`);
+  return response.data;
+}
+
+export async function fetchPostComments(postId: number) {
+  const response = await apiClient.get<CommentItem[]>(
+    `/posts/${postId}/comments`
+  );
+  return response.data;
+}
+
+export async function fetchUserByUsername(username: string, page = 1, limit = 10) {
+  const response = await apiClient.get<UserPostsResponse>(
+    `/users/by-username/${username}?limit=${limit}&page=${page}`
+  );
+  return response.data;
+}

@@ -1,3 +1,15 @@
+"use client";
+
+import { useMemo } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import {
+  fetchPostComments,
+  fetchPostDetail,
+  fetchUserById,
+  fetchUserByUsername,
+} from "@/lib/tanstackQuery";
 import {
   Dialog,
   DialogClose,
@@ -7,309 +19,318 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const tags = ["Programming", "Frontend", "Coding"];
+const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
-const reasons = [
-  {
-    title: "High Industry Demand",
-    body:
-      "Tech companies, startups, and even traditional businesses are constantly looking for frontend developers to help them deliver high-quality digital experiences.",
-  },
-  {
-    title: "Powerful and Beginner-Friendly Tools",
-    body:
-      "Modern frameworks like React, Vue, and Svelte make it easier than ever to build interactive UIs. Their growing ecosystems and active communities mean you'll find support at every step.",
-  },
-  {
-    title: "Creative Freedom",
-    body:
-      "Frontend development allows you to bring your design ideas to life. From animations to responsive layouts, your creativity directly impacts how users engage with a product.",
-  },
-  {
-    title: "Rapid Career Growth",
-    body:
-      "With roles like UI Developer, React Developer, and Frontend Engineer, you'll find plenty of opportunities with competitive salaries and growth potential.",
-  },
-  {
-    title: "Essential for Fullstack Development",
-    body:
-      "Understanding frontend is crucial if you want to become a fullstack developer. It complements your backend knowledge and enables you to build complete applications.",
-  },
-];
-
-const comments = [
-  {
-    id: 1,
-    name: "Clarissa",
-    date: "27 Maret 2025",
-    message: "This is super insightful — thanks for sharing!",
-  },
-  {
-    id: 2,
-    name: "Marco",
-    date: "27 Maret 2025",
-    message: "Exactly what I needed to read today. Frontend is evolving so fast!",
-  },
-  {
-    id: 3,
-    name: "Michael Sailor",
-    date: "27 Maret 2025",
-    message: "Great breakdown! You made complex ideas sound simple.",
-  },
-];
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 
 export default function DetailPage() {
+  const params = useParams();
+  const postId = Number(params?.id);
+
+  const {
+    data: post,
+    isLoading: isPostLoading,
+    isError: isPostError,
+  } = useQuery({
+    queryKey: ["post-detail", postId],
+    queryFn: () => fetchPostDetail(postId),
+    enabled: Number.isFinite(postId),
+  });
+
+  const {
+    data: author,
+    isLoading: isAuthorLoading,
+    isError: isAuthorError,
+  } = useQuery({
+    queryKey: ["post-author", post?.author.id],
+    queryFn: () => fetchUserById(post!.author.id),
+    enabled: !!post?.author.id,
+  });
+
+  const {
+    data: comments,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useQuery({
+    queryKey: ["post-comments", postId],
+    queryFn: () => fetchPostComments(postId),
+    enabled: Number.isFinite(postId),
+  });
+
+  const {
+    data: authorPosts,
+    isLoading: isAuthorPostsLoading,
+    isError: isAuthorPostsError,
+  } = useQuery({
+    queryKey: ["author-posts", post?.author.username],
+    queryFn: () => fetchUserByUsername(post!.author.username, 1, 10),
+    enabled: !!post?.author.username,
+  });
+
+  const latestComments = useMemo(() => {
+    const items = comments ?? [];
+    return [...items]
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+      .slice(0, 3);
+  }, [comments]);
+
+  const anotherPost = useMemo(() => {
+    const posts = authorPosts?.posts.data ?? [];
+    const filtered = posts.filter((item) => item.id !== post?.id);
+    if (!filtered.length) return null;
+    const randomIndex = Math.floor(Math.random() * filtered.length);
+    return filtered[randomIndex];
+  }, [authorPosts, post?.id]);
+
+  const isLoading =
+    isPostLoading ||
+    isAuthorLoading ||
+    isCommentsLoading ||
+    isAuthorPostsLoading;
+  const isError =
+    isPostError || isAuthorError || isCommentsError || isAuthorPostsError;
+
+  if (isLoading) {
+    return (
+      <main className="mx-auto w-full max-w-3xl px-6 py-10">
+        <div className="space-y-6 animate-pulse">
+          <div className="h-7 w-3/4 rounded bg-[#eef0f4]" />
+          <div className="h-4 w-1/2 rounded bg-[#eef0f4]" />
+          <div className="h-4 w-2/3 rounded bg-[#eef0f4]" />
+          <div className="h-[220px] w-full rounded-2xl bg-[#eef0f4]" />
+          <div className="space-y-3">
+            <div className="h-4 w-full rounded bg-[#eef0f4]" />
+            <div className="h-4 w-full rounded bg-[#eef0f4]" />
+            <div className="h-4 w-4/5 rounded bg-[#eef0f4]" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isError || !post) {
+    return (
+      <main className="mx-auto w-full max-w-3xl px-6 py-10">
+        <div className="rounded-2xl border border-[#fca5a5] bg-[#fee2e2] px-5 py-4 text-sm text-[#b91c1c]">
+          Failed to load post detail. Please try again.
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-10">
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold sm:text-3xl">
-            5 Reasons to Learn Frontend Development in 2025
-          </h1>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
-                <img
-                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                  alt="John Doe"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <span className="text-sm font-medium text-[#111827]">
-                John Doe
-              </span>
-            </div>
-            <span>•</span>
-            <span>27 May 2025</span>
-          </div>
-          <div className="flex items-center gap-4 border-y border-[#eef0f4] py-3 text-xs text-[#6b7280]">
-            <div className="flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M7 10v12" />
-                <path d="M15 5.88L14 10h5.83a2 2 0 0 1 1.99 2.24l-1 7A2 2 0 0 1 18.85 21H7" />
-                <path d="M7 10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3" />
-              </svg>
-              <span>20</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-              </svg>
-              <span>20</span>
-            </div>
-          </div>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold sm:text-3xl">{post.title}</h1>
+        <div className="flex flex-wrap gap-2">
+          {post.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
+            >
+              {tag}
+            </span>
+          ))}
         </div>
-
-        <div className="mt-6">
-          <img
-            src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80"
-            alt="Working desk"
-            className="h-[220px] w-full rounded-2xl object-cover sm:h-[360px]"
-          />
-        </div>
-
-        <article className="mt-6 space-y-5 text-sm leading-7 text-[#374151]">
-          <p>
-            Frontend development is more than just building beautiful user
-            interfaces — it's about crafting user experiences that are fast,
-            accessible, and intuitive. As we move into 2025, the demand for
-            skilled frontend developers continues to rise.
-          </p>
-          <p>
-            Here are 5 reasons why you should start learning frontend development
-            today:
-          </p>
-          <ol className="space-y-4">
-            {reasons.map((item, index) => (
-              <li key={item.title}>
-                <p className="font-semibold text-[#111827]">
-                  {index + 1}. {item.title}
-                </p>
-                <p className="mt-1">{item.body}</p>
-              </li>
-            ))}
-          </ol>
-          <div>
-            <p className="font-semibold text-[#111827]">Conclusion:</p>
-            <p className="mt-2">
-              If you're interested in building things that users interact with
-              daily, frontend development is the path to take. Whether you're a
-              designer learning to code or a backend developer exploring the
-              frontend, 2025 is the perfect year to start.
-            </p>
-          </div>
-        </article>
-
-        <section className="mt-10 border-t border-[#eef0f4] pt-8">
-          <h2 className="text-lg font-semibold">Comments(5)</h2>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
               <img
-                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                alt="John Doe"
+                src={author?.avatarUrl || "/dummy-home-article.png"}
+                alt={author?.name || post.author.name}
                 className="h-full w-full object-cover"
               />
             </div>
-            <span className="text-sm font-semibold">John Doe</span>
+            <span className="text-sm font-medium text-[#111827]">
+              {author?.name || post.author.name}
+            </span>
           </div>
-          <p className="mt-3 text-sm text-[#6b7280]">Give your Comments</p>
-          <div className="mt-3 space-y-4">
-            <textarea
-              placeholder="Enter your comment"
-              className="h-28 w-full resize-none rounded-2xl border border-[#e1e5eb] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
-            />
-            <div className="flex justify-end">
-              <button className="h-11 w-32 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white">
-                Send
-              </button>
-            </div>
+          <span>•</span>
+          <span>{formatDate(post.createdAt)}</span>
+        </div>
+        <div className="flex items-center gap-4 border-y border-[#eef0f4] py-3 text-xs text-[#6b7280]">
+          <div className="flex items-center gap-2">
+            <img src="/like-icon.svg" alt="Likes" className="h-4 w-4" />
+            <span>{post.likes}</span>
           </div>
+          <div className="flex items-center gap-2">
+            <img src="/comment-icon.svg" alt="Comments" className="h-4 w-4" />
+            <span>{comments?.length ?? 0}</span>
+          </div>
+        </div>
+      </div>
 
-          <div className="mt-8 space-y-6 border-t border-[#eef0f4] pt-6">
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
-                  <img
-                    src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=80&q=80"
-                    alt={comment.name}
-                    className="h-full w-full object-cover"
-                  />
+      <div className="mt-6">
+        <img
+          src={post.imageUrl || "/dummy-home-article.png"}
+          alt={post.title}
+          className="h-[220px] w-full rounded-2xl object-cover sm:h-[360px]"
+        />
+      </div>
+
+      <article
+        className="prose prose-sm mt-6 max-w-none text-[#374151]"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
+
+      <section className="mt-10 border-t border-[#eef0f4] pt-8">
+        <h2 className="text-lg font-semibold">
+          Comments({comments?.length ?? 0})
+        </h2>
+        <div className="mt-4 flex items-center gap-3">
+          <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+            <img
+              src={author?.avatarUrl || "/dummy-home-article.png"}
+              alt={author?.name || post.author.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <span className="text-sm font-semibold">
+            {author?.name || post.author.name}
+          </span>
+        </div>
+        <p className="mt-3 text-sm text-[#6b7280]">Give your Comments</p>
+        <div className="mt-3 space-y-4">
+          <textarea
+            placeholder="Enter your comment"
+            className="h-28 w-full resize-none rounded-2xl border border-[#e1e5eb] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+          />
+          <div className="flex justify-end">
+            <button className="h-11 w-32 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white">
+              Send
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 space-y-6 border-t border-[#eef0f4] pt-6">
+          {latestComments.map((comment) => (
+            <div key={comment.id} className="flex gap-3">
+              <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+                <img
+                  src={comment.author.avatarUrl || "/dummy-home-article.png"}
+                  alt={comment.author.name}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  {comment.author.name}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    {comment.name}
-                  </div>
-                  <p className="text-xs text-[#6b7280]">{comment.date}</p>
-                  <p className="mt-2 text-sm text-[#4b5563]">
-                    {comment.message}
-                  </p>
+                <p className="text-xs text-[#6b7280]">
+                  {formatDate(comment.createdAt)}
+                </p>
+                <p className="mt-2 text-sm text-[#4b5563]">{comment.content}</p>
+              </div>
+            </div>
+          ))}
+          <Dialog>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="text-left text-sm font-semibold text-[#0b8bd3]"
+              >
+                See All Comments
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Comments({comments?.length ?? 0})</DialogTitle>
+                <DialogClose asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                    aria-label="Close"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </DialogClose>
+              </DialogHeader>
+
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-semibold">Give your Comments</p>
+                <textarea
+                  placeholder="Enter your comment"
+                  className="h-28 w-full resize-none rounded-2xl border border-[#d1d5db] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+                />
+                <div className="flex justify-end sm:justify-end">
+                  <button className="mt-2 h-11 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white sm:w-44">
+                    Send
+                  </button>
                 </div>
               </div>
-            ))}
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  type="button"
-                  className="text-left text-sm font-semibold text-[#0b8bd3]"
-                >
-                  See All Comments
-                </button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Comments(5)</DialogTitle>
-                  <DialogClose asChild>
-                    <button
-                      type="button"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
-                      aria-label="Close"
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
-                  </DialogClose>
-                </DialogHeader>
 
-                <div className="mt-4 space-y-2">
-                  <p className="text-sm font-semibold">Give your Comments</p>
-                  <textarea
-                    placeholder="Enter your comment"
-                    className="h-28 w-full resize-none rounded-2xl border border-[#d1d5db] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
-                  />
-                  <div className="flex justify-end sm:justify-end">
-                    <button className="mt-2 h-11 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white sm:w-44">
-                      Send
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-6 max-h-[50vh] space-y-4 overflow-y-auto border-t border-[#e7e9ee] pt-5">
-                  {comments.map((comment) => (
-                    <div
-                      key={`modal-${comment.id}`}
-                      className="flex gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
-                    >
-                      <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
-                        <img
-                          src="https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=80&q=80"
-                          alt={comment.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold">
-                          {comment.name}
-                        </div>
-                        <p className="text-xs text-[#6b7280]">
-                          {comment.date}
-                        </p>
-                        <p className="mt-2 text-sm text-[#4b5563]">
-                          {comment.message}
-                        </p>
-                      </div>
+              <div className="mt-6 max-h-[50vh] space-y-4 overflow-y-auto border-t border-[#e7e9ee] pt-5">
+                {(comments ?? []).map((comment) => (
+                  <div
+                    key={`modal-${comment.id}`}
+                    className="flex gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
+                  >
+                    <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+                      <img
+                        src={
+                          comment.author.avatarUrl || "/dummy-home-article.png"
+                        }
+                        alt={comment.author.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </section>
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold">
+                        {comment.author.name}
+                      </div>
+                      <p className="text-xs text-[#6b7280]">
+                        {formatDate(comment.createdAt)}
+                      </p>
+                      <p className="mt-2 text-sm text-[#4b5563]">
+                        {comment.content}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
 
-        <section className="mt-10 border-t border-[#eef0f4] pt-8">
-          <h2 className="text-lg font-semibold">Another Post</h2>
+      <section className="mt-10 border-t border-[#eef0f4] pt-8">
+        <h2 className="text-lg font-semibold">Another Post</h2>
+        {anotherPost ? (
           <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#e7e9ee] p-4 sm:flex-row">
-            <img
-              src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80"
-              alt="Another post"
-              className="h-[140px] w-full rounded-xl object-cover sm:h-[120px] sm:w-[200px]"
-            />
+            <Link href={`/detail/${anotherPost.id}`}>
+              <img
+                src={anotherPost.imageUrl || "/dummy-home-article.png"}
+                alt={anotherPost.title}
+                className="h-[140px] w-full rounded-xl object-cover sm:h-[120px] sm:w-[200px]"
+              />
+            </Link>
             <div className="flex-1 space-y-2">
-              <h3 className="text-base font-semibold">
-                5 Reasons to Learn Frontend Development in 2025
-              </h3>
+              <Link href={`/detail/${anotherPost.id}`}>
+                <h3 className="text-base font-semibold">{anotherPost.title}</h3>
+              </Link>
               <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
+                {anotherPost.tags.map((tag) => (
                   <span
                     key={`another-${tag}`}
                     className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
@@ -319,65 +340,46 @@ export default function DetailPage() {
                 ))}
               </div>
               <p className="text-sm text-[#6b7280]">
-                Frontend development is more than just building beautiful user
-                interfaces — it's about crafting user experiences that are
-                fast, accessible...
+                {stripHtml(anotherPost.content).slice(0, 120)}...
               </p>
               <div className="flex items-center gap-3 text-xs text-[#6b7280]">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 overflow-hidden rounded-full bg-[#e5e7eb]">
                     <img
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                      alt="John Doe"
+                      src={author?.avatarUrl || "/dummy-home-article.png"}
+                      alt={author?.name || post.author.name}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <span className="text-sm font-medium text-[#111827]">
-                    John Doe
+                    {author?.name || post.author.name}
                   </span>
                 </div>
                 <span>•</span>
-                <span>27 May 2025</span>
+                <span>{formatDate(anotherPost.createdAt)}</span>
               </div>
               <div className="flex items-center gap-4 text-xs text-[#6b7280]">
                 <div className="flex items-center gap-2">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M7 10v12" />
-                    <path d="M15 5.88L14 10h5.83a2 2 0 0 1 1.99 2.24l-1 7A2 2 0 0 1 18.85 21H7" />
-                    <path d="M7 10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3" />
-                  </svg>
-                  <span>20</span>
+                  <img src="/like-icon.svg" alt="Likes" className="h-4 w-4" />
+                  <span>{anotherPost.likes}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-                  </svg>
-                  <span>20</span>
+                  <img
+                    src="/comment-icon.svg"
+                    alt="Comments"
+                    className="h-4 w-4"
+                  />
+                  <span>{anotherPost.comments}</span>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        ) : (
+          <p className="mt-4 text-sm text-[#6b7280]">
+            No other posts available.
+          </p>
+        )}
+      </section>
     </main>
   );
 }

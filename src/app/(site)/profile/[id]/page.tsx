@@ -260,9 +260,9 @@ export default function ProfilePage() {
                   <div className="flex-1 sm:flex sm:min-h-[190px] sm:flex-col sm:justify-between">
                     <div className="space-y-3">
                       <a href={`/detail/${post.id}`}>
-                      <a href={`/post?id=${post.id}`}>
-                        <h3 className="text-base font-semibold">{post.title}</h3>
-                      </a>
+                        <h3 className="text-base font-semibold">
+                          {post.title}sss
+                        </h3>
                       </a>
                       <div className="flex flex-wrap gap-2">
                         {post.tags.map((tag) => (
@@ -325,7 +325,9 @@ export default function ProfilePage() {
           >
             <form className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Current Password</label>
+                <label className="text-sm font-semibold">
+                  Current Password
+                </label>
                 <div className="relative">
                   <input
                     type="password"
@@ -379,7 +381,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Confirm New Password</label>
+                <label className="text-sm font-semibold">
+                  Confirm New Password
+                </label>
                 <div className="relative">
                   <input
                     type="password"

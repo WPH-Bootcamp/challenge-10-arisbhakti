@@ -16,6 +16,7 @@ export default function Header() {
   const [isLogin, setIsLogin] = useState(false);
   const [userLabel, setUserLabel] = useState("User");
   const [userId, setUserId] = useState<number | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const readAuth = () => {
@@ -25,6 +26,7 @@ export default function Header() {
       setIsLogin(false);
       setUserLabel("User");
       setUserId(null);
+      setProfileAvatar(null);
       return;
     }
     setIsLogin(true);
@@ -33,13 +35,35 @@ export default function Header() {
     const nameFromEmail = email ? email.split("@")[0] : "User";
     setUserLabel(payload?.username || payload?.name || nameFromEmail || "User");
     setUserId(payload?.id ?? null);
+
+    const storedProfile = localStorage.getItem("userProfile");
+    if (storedProfile) {
+      try {
+        const parsed = JSON.parse(storedProfile) as {
+          name?: string;
+          username?: string;
+          avatarUrl?: string;
+        };
+        setUserLabel(
+          parsed?.name || parsed?.username || payload?.username || nameFromEmail
+        );
+        setProfileAvatar(parsed?.avatarUrl || null);
+      } catch {
+        setProfileAvatar(null);
+      }
+    }
   };
 
   useEffect(() => {
     readAuth();
     const handleStorage = () => readAuth();
+    const handleProfileUpdated = () => readAuth();
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("profile-updated", handleProfileUpdated);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("profile-updated", handleProfileUpdated);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -54,7 +78,7 @@ export default function Header() {
   const { data: currentUser } = useQuery({
     queryKey: ["auth-user", userId],
     queryFn: () => fetchUserById(userId!),
-    enabled: !!userId,
+    enabled: !!userId && !profileAvatar,
   });
 
   return (
@@ -108,6 +132,7 @@ export default function Header() {
                   <button className="flex items-center gap-2">
                     <img
                       src={
+                        profileAvatar ||
                         currentUser?.avatarUrl ||
                         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
                       }

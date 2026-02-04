@@ -224,6 +224,8 @@ export default function ProfilePage() {
         headline: editForm.headline.trim(),
         avatar: editForm.avatarFile,
       });
+      localStorage.setItem("userProfile", JSON.stringify(updated));
+      window.dispatchEvent(new Event("profile-updated"));
       queryClient.setQueryData(["profile", paramId], (prev: any) => ({
         ...(prev ?? {}),
         ...updated,

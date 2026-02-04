@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import axios from "axios";
 import { loginUser } from "@/lib/api";
+import { fetchMeProfile } from "@/lib/tanstackQuery";
 
 type FieldErrors = {
   email?: string;
@@ -62,6 +63,13 @@ export default function LoginPage() {
         password: form.password,
       });
       localStorage.setItem("token", response.token);
+      try {
+        const profile = await fetchMeProfile(response.token);
+        localStorage.setItem("userProfile", JSON.stringify(profile));
+        window.dispatchEvent(new Event("profile-updated"));
+      } catch {
+        // Ignore profile fetch errors on login
+      }
       router.push("/");
     } catch (error) {
       const nextErrors: FieldErrors = {};

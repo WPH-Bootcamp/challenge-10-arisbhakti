@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,42 @@ import {
 
 export default function Header() {
   const [isLogin, setIsLogin] = useState(false);
+  const [userLabel, setUserLabel] = useState("User");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const readAuth = () => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLogin(false);
+      setUserLabel("User");
+      return;
+    }
+    setIsLogin(true);
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const email = payload?.email ?? "";
+      const nameFromEmail = email ? email.split("@")[0] : "User";
+      setUserLabel(payload?.username || payload?.name || nameFromEmail || "User");
+    } catch {
+      setUserLabel("User");
+    }
+  };
+
+  useEffect(() => {
+    readAuth();
+    const handleStorage = () => readAuth();
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLogin(false);
+    setUserLabel("User");
+  };
+
+  const avatarAlt = useMemo(() => userLabel || "User", [userLabel]);
 
   return (
     <header className="border-b border-[#e7e9ee] bg-white text-neutral-950">
@@ -61,10 +96,10 @@ export default function Header() {
                   <button className="flex items-center gap-2">
                     <img
                       src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                      alt="John Doe"
+                      alt={avatarAlt}
                       className="h-9 w-9 rounded-full object-cover"
                     />
-                    <span className="text-sm font-semibold">John Doe</span>
+                    <span className="text-sm font-semibold">{userLabel}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -76,7 +111,7 @@ export default function Header() {
                     />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setIsLogin(false)}>
+                  <DropdownMenuItem onSelect={handleLogout}>
                     <img
                       src="/logout-icon.svg"
                       alt="Logout"
@@ -118,7 +153,7 @@ export default function Header() {
                   <button className="flex items-center gap-2">
                     <img
                       src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
-                      alt="John Doe"
+                      alt={avatarAlt}
                       className="h-9 w-9 rounded-full object-cover"
                     />
                   </button>
@@ -132,7 +167,7 @@ export default function Header() {
                     />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setIsLogin(false)}>
+                  <DropdownMenuItem onSelect={handleLogout}>
                     <img
                       src="/logout-icon.svg"
                       alt="Logout"

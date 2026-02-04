@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchPostComments,
   fetchPostDetail,
   fetchUserById,
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
+import { createComment } from "@/lib/api";
+import { getAuthPayload } from "@/lib/auth";
 import {
   Dialog,
   DialogClose,
@@ -31,6 +33,17 @@ const formatDate = (value: string) =>
 export default function DetailPage() {
   const params = useParams();
   const postId = Number(params?.id);
+  const queryClient = useQueryClient();
+  const [commentValue, setCommentValue] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [modalCommentValue, setModalCommentValue] = useState("");
+  const [modalCommentError, setModalCommentError] = useState("");
+  const [isModalSubmitting, setIsModalSubmitting] = useState(false);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const authPayload = getAuthPayload(token);
+  const authUserId = authPayload?.id;
 
   const {
     data: post,
@@ -50,6 +63,12 @@ export default function DetailPage() {
     queryKey: ["post-author", post?.author.id],
     queryFn: () => fetchUserById(post!.author.id),
     enabled: !!post?.author.id,
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["auth-user", authUserId],
+    queryFn: () => fetchUserById(authUserId!),
+    enabled: !!authUserId,
   });
 
   const {
@@ -97,6 +116,55 @@ export default function DetailPage() {
     isAuthorPostsLoading;
   const isError =
     isPostError || isAuthorError || isCommentsError || isAuthorPostsError;
+
+  const handleSubmitComment = async (isModal = false) => {
+    const value = isModal ? modalCommentValue : commentValue;
+    if (!value.trim()) {
+      const message = "Comment content cannot be empty";
+      if (isModal) {
+        setModalCommentError(message);
+      } else {
+        setCommentError(message);
+      }
+      return;
+    }
+    try {
+      if (isModal) {
+        setIsModalSubmitting(true);
+        setModalCommentError("");
+      } else {
+        setIsCommentSubmitting(true);
+        setCommentError("");
+      }
+      const response = await createComment(postId, { content: value.trim() });
+      queryClient.setQueryData(
+        ["post-comments", postId],
+        (prev: typeof comments) => {
+          const current = prev ?? [];
+          return [response as any, ...current];
+        }
+      );
+      if (isModal) {
+        setModalCommentValue("");
+      } else {
+        setCommentValue("");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to post comment";
+      if (isModal) {
+        setModalCommentError(message);
+      } else {
+        setCommentError(message);
+      }
+    } finally {
+      if (isModal) {
+        setIsModalSubmitting(false);
+      } else {
+        setIsCommentSubmitting(false);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -188,24 +256,61 @@ export default function DetailPage() {
         <div className="mt-4 flex items-center gap-3">
           <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
             <img
-              src={author?.avatarUrl || "/dummy-home-article.png"}
-              alt={author?.name || post.author.name}
+              src={
+                currentUser?.avatarUrl ||
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+              }
+              alt={currentUser?.name || "User"}
               className="h-full w-full object-cover"
             />
           </div>
           <span className="text-sm font-semibold">
-            {author?.name || post.author.name}
+            {currentUser?.name || authPayload?.username || "User"}
           </span>
         </div>
         <p className="mt-3 text-sm text-[#6b7280]">Give your Comments</p>
         <div className="mt-3 space-y-4">
           <textarea
             placeholder="Enter your comment"
+            value={commentValue}
+            onChange={(event) => {
+              setCommentValue(event.target.value);
+              if (commentError) setCommentError("");
+            }}
             className="h-28 w-full resize-none rounded-2xl border border-[#e1e5eb] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
           />
+          {commentError && (
+            <p className="text-xs text-[#f43f5e]">{commentError}</p>
+          )}
           <div className="flex justify-end">
-            <button className="h-11 w-32 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white">
-              Send
+            <button
+              type="button"
+              onClick={() => handleSubmitComment(false)}
+              disabled={isCommentSubmitting}
+              className="flex h-11 w-32 items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80"
+            >
+              {isCommentSubmitting && (
+                <svg
+                  className="h-4 w-4 animate-spin text-white"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                  />
+                </svg>
+              )}
+              {isCommentSubmitting ? "Sending..." : "Send"}
             </button>
           </div>
         </div>
@@ -271,11 +376,45 @@ export default function DetailPage() {
                 <p className="text-sm font-semibold">Give your Comments</p>
                 <textarea
                   placeholder="Enter your comment"
+                  value={modalCommentValue}
+                  onChange={(event) => {
+                    setModalCommentValue(event.target.value);
+                    if (modalCommentError) setModalCommentError("");
+                  }}
                   className="h-28 w-full resize-none rounded-2xl border border-[#d1d5db] px-4 py-3 text-sm outline-none focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
                 />
+                {modalCommentError && (
+                  <p className="text-xs text-[#f43f5e]">{modalCommentError}</p>
+                )}
                 <div className="flex justify-end sm:justify-end">
-                  <button className="mt-2 h-11 w-full rounded-full bg-[#0b8bd3] text-sm font-semibold text-white sm:w-44">
-                    Send
+                  <button
+                    type="button"
+                    onClick={() => handleSubmitComment(true)}
+                    disabled={isModalSubmitting}
+                    className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80 sm:w-44"
+                  >
+                    {isModalSubmitting && (
+                      <svg
+                        className="h-4 w-4 animate-spin text-white"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                        />
+                      </svg>
+                    )}
+                    {isModalSubmitting ? "Sending..." : "Send"}
                   </button>
                 </div>
               </div>

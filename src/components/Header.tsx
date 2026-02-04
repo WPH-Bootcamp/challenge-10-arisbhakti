@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { fetchUserById } from "@/lib/tanstackQuery";
+import { getAuthPayload } from "@/lib/auth";
 
 export default function Header() {
   const [isLogin, setIsLogin] = useState(false);
   const [userLabel, setUserLabel] = useState("User");
+  const [userId, setUserId] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const readAuth = () => {
@@ -19,17 +23,15 @@ export default function Header() {
     if (!token) {
       setIsLogin(false);
       setUserLabel("User");
+      setUserId(null);
       return;
     }
     setIsLogin(true);
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const email = payload?.email ?? "";
-      const nameFromEmail = email ? email.split("@")[0] : "User";
-      setUserLabel(payload?.username || payload?.name || nameFromEmail || "User");
-    } catch {
-      setUserLabel("User");
-    }
+    const payload = getAuthPayload(token);
+    const email = payload?.email ?? "";
+    const nameFromEmail = email ? email.split("@")[0] : "User";
+    setUserLabel(payload?.username || payload?.name || nameFromEmail || "User");
+    setUserId(payload?.id ?? null);
   };
 
   useEffect(() => {
@@ -43,9 +45,16 @@ export default function Header() {
     localStorage.removeItem("token");
     setIsLogin(false);
     setUserLabel("User");
+    setUserId(null);
   };
 
   const avatarAlt = useMemo(() => userLabel || "User", [userLabel]);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["auth-user", userId],
+    queryFn: () => fetchUserById(userId!),
+    enabled: !!userId,
+  });
 
   return (
     <header className="border-b border-[#e7e9ee] bg-white text-neutral-950">
@@ -95,7 +104,10 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2">
                     <img
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                      src={
+                        currentUser?.avatarUrl ||
+                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                      }
                       alt={avatarAlt}
                       className="h-9 w-9 rounded-full object-cover"
                     />
@@ -152,7 +164,10 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2">
                     <img
-                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                      src={
+                        currentUser?.avatarUrl ||
+                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                      }
                       alt={avatarAlt}
                       className="h-9 w-9 rounded-full object-cover"
                     />

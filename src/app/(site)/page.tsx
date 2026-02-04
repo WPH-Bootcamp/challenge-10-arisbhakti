@@ -20,6 +20,12 @@ export default function Home() {
   const [showToast, setShowToast] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("likedPostIds");
@@ -431,7 +437,7 @@ export default function Home() {
             <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
             <button
               className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => handlePageChange(Math.max(1, page - 1))}
               disabled={page === 1}
             >
               <svg
@@ -458,7 +464,7 @@ export default function Home() {
                       ? "bg-[#0b8bd3] text-white"
                       : "text-neutral-600"
                   } cursor-pointer`}
-                  onClick={() => setPage(pageNumber)}
+                  onClick={() => handlePageChange(pageNumber)}
                 >
                   {pageNumber}
                 </button>
@@ -466,7 +472,7 @@ export default function Home() {
             </div>
             <button
               className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
-              onClick={() => setPage((prev) => Math.min(lastPage, prev + 1))}
+              onClick={() => handlePageChange(Math.min(lastPage, page + 1))}
               disabled={page === lastPage}
             >
               Next

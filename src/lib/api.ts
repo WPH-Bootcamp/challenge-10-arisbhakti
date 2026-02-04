@@ -135,3 +135,39 @@ export async function createPost(payload: CreatePostPayload) {
   });
   return response.data;
 }
+
+export type UpdatePostPayload = {
+  title: string;
+  content: string;
+  tags: string[];
+  image?: File | null;
+  removeImage?: boolean;
+};
+
+export async function updatePost(postId: number, payload: UpdatePostPayload) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("title", payload.title);
+  formData.append("content", payload.content);
+  formData.append("tags", payload.tags.join(","));
+  if (payload.image) {
+    formData.append("image", payload.image);
+  }
+  if (payload.removeImage !== undefined) {
+    formData.append("removeImage", payload.removeImage ? "true" : "");
+  }
+  const response = await apiClient.patch<CreatePostResponse>(
+    `/posts/${postId}`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+}

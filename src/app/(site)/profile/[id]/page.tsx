@@ -260,7 +260,9 @@ export default function ProfilePage() {
                   <div className="flex-1 sm:flex sm:min-h-[190px] sm:flex-col sm:justify-between">
                     <div className="space-y-3">
                       <a href={`/detail/${post.id}`}>
+                      <a href={`/post?id=${post.id}`}>
                         <h3 className="text-base font-semibold">{post.title}</h3>
+                      </a>
                       </a>
                       <div className="flex flex-wrap gap-2">
                         {post.tags.map((tag) => (
@@ -292,7 +294,7 @@ export default function ProfilePage() {
                         </a>
                         <span className="h-5 w-px bg-[#d1d5db]" />
                         <a
-                          href="#"
+                          href={`/post?id=${post.id}`}
                           className="font-semibold text-[#0b8bd3] underline underline-offset-2"
                         >
                           Edit

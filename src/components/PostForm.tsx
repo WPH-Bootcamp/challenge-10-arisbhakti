@@ -1,40 +1,56 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import RichTextEditor from "@/components/RichTextEditor";
-import { createPost } from "@/lib/api";
+import { createPost, updatePost } from "@/lib/api";
 
 const suggestions = ["Programming", "Frontend", "Coding", "Design", "UI UX"];
 
 type PostFormProps = {
   mode: "write" | "edit";
+  postId?: number;
+  initialData?: {
+    title: string;
+    content: string;
+    tags: string[];
+    imageUrl?: string | null;
+  };
 };
 
-export default function PostForm({ mode }: PostFormProps) {
+export default function PostForm({ mode, postId, initialData }: PostFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(
-    mode === "edit" ? ["Programming", "Frontend", "Coding"] : []
+    mode === "edit" ? ["Programming", "Frontend", "Coding"] : [],
   );
-  const [title, setTitle] = useState(
-    mode === "edit" ? "5 Reasons to Learn Frontend Development in 2025" : ""
-  );
-  const [content, setContent] = useState(
-    mode === "edit"
-      ? "<ul><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li></ul>"
-      : ""
-  );
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const hydratedRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!initialData) return;
+    if (mode === "edit" && postId && hydratedRef.current === postId) return;
+    setTitle(initialData.title ?? "");
+    setContent(initialData.content ?? "");
+    setTags(initialData.tags ?? []);
+    if (initialData.imageUrl) {
+      setImagePreview(initialData.imageUrl);
+    }
+    if (mode === "edit" && postId) hydratedRef.current = postId;
+  }, [initialData, mode, postId]);
 
   const filteredSuggestions = useMemo(() => {
     const query = tagInput.trim().toLowerCase();
     if (!query) return [];
     return suggestions.filter(
-      (item) => item.toLowerCase().includes(query) && !tags.includes(item)
+      (item) => item.toLowerCase().includes(query) && !tags.includes(item),
     );
   }, [tagInput, tags]);
 
@@ -58,13 +74,15 @@ export default function PostForm({ mode }: PostFormProps) {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setRemoveImage(false);
     setErrors((prev) => ({ ...prev, image: "" }));
   };
 
   const handleRemoveImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    if (imagePreview && imageFile) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     setImageFile(null);
+    setRemoveImage(true);
   };
 
   const validate = () => {
@@ -74,43 +92,66 @@ export default function PostForm({ mode }: PostFormProps) {
       nextErrors.content = "Content is required";
     }
     if (!tags.length) nextErrors.tags = "At least one tag is required";
-    if (!imageFile) nextErrors.image = "Cover image is required";
+    if (mode === "write" && !imageFile) {
+      nextErrors.image = "Cover image is required";
+    }
     return nextErrors;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    console.log("Submitting form...");
     event.preventDefault();
     const validation = validate();
     if (Object.keys(validation).length) {
       setErrors(validation);
       return;
     }
-    if (!imageFile) return;
+    console.log("Submitting form 2nd Phase...");
+    if (mode === "write" && !imageFile) return;
     setIsSubmitting(true);
     setErrors({});
+    console.log("Submitting form 3rd Phase...");
     try {
-      await createPost({
-        title: title.trim(),
-        content,
-        tags,
-        image: imageFile,
-      });
+      if (mode === "edit" && postId) {
+        await updatePost(postId, {
+          title: title.trim(),
+          content,
+          tags,
+          image: imageFile ?? null,
+          removeImage: removeImage ? true : imageFile ? false : undefined,
+        });
+        setToastMessage("Post updated successfully.");
+      } else {
+        await createPost({
+          title: title.trim(),
+          content,
+          tags,
+          image: imageFile!,
+        });
+        setToastMessage("Post uploaded successfully.");
+        setTitle("");
+        setContent("");
+        setTags([]);
+        setTagInput("");
+        handleRemoveImage();
+      }
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-      setTitle("");
-      setContent("");
-      setTags([]);
-      setTagInput("");
-      handleRemoveImage();
     } catch (error) {
-      setErrors({ general: "Failed to upload post" });
+      setErrors({
+        general:
+          mode === "edit" ? "Failed to update post" : "Failed to upload post",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form className="mx-auto w-full max-w-2xl space-y-6" onSubmit={handleSubmit}>
+    <form
+      className="mx-auto w-full max-w-2xl space-y-6"
+      onSubmit={handleSubmit}
+    >
       <div className="space-y-2">
         <label className="text-sm font-semibold">Title</label>
         <input
@@ -139,8 +180,7 @@ export default function PostForm({ mode }: PostFormProps) {
           initialContent={content}
           onChange={(value) => {
             setContent(value);
-            if (errors.content)
-              setErrors((prev) => ({ ...prev, content: "" }));
+            if (errors.content) setErrors((prev) => ({ ...prev, content: "" }));
           }}
         />
         {errors.content && (
@@ -255,7 +295,9 @@ export default function PostForm({ mode }: PostFormProps) {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(event) => handleImageChange(event.target.files?.[0] ?? null)}
+          onChange={(event) =>
+            handleImageChange(event.target.files?.[0] ?? null)
+          }
         />
       </div>
 
@@ -300,9 +342,7 @@ export default function PostForm({ mode }: PostFormProps) {
             />
           </div>
         </div>
-        {errors.tags && (
-          <p className="text-xs text-[#f43f5e]">{errors.tags}</p>
-        )}
+        {errors.tags && <p className="text-xs text-[#f43f5e]">{errors.tags}</p>}
         {filteredSuggestions.length > 0 && (
           <div className="rounded-xl border border-[#e7e9ee] bg-white p-2 shadow-sm">
             {filteredSuggestions.map((item) => (
@@ -325,7 +365,11 @@ export default function PostForm({ mode }: PostFormProps) {
           disabled={isSubmitting}
           className="h-12 w-44 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80"
         >
-          {isSubmitting ? "Uploading..." : "Finish"}
+          {isSubmitting
+            ? mode === "edit"
+              ? "Updating..."
+              : "Uploading..."
+            : "Finish"}
         </button>
       </div>
       {errors.general && (
@@ -333,7 +377,7 @@ export default function PostForm({ mode }: PostFormProps) {
       )}
       {showToast && (
         <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
-          Post uploaded successfully.
+          {toastMessage}
         </div>
       )}
     </form>

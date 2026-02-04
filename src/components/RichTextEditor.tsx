@@ -26,6 +26,8 @@ export default function RichTextEditor({
   const editorRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const quillRef = useRef<any>(null);
+  const lastContentRef = useRef<string | undefined>(undefined);
+  const didEditRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,13 +51,15 @@ export default function RichTextEditor({
 
       if (initialContent) {
         quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
+        lastContentRef.current = initialContent;
       }
 
-      if (onChange) {
-        quillRef.current.on("text-change", () => {
+      quillRef.current.on("text-change", () => {
+        didEditRef.current = true;
+        if (onChange) {
           onChange(quillRef.current.root.innerHTML);
-        });
-      }
+        }
+      });
     };
 
     init();
@@ -65,6 +69,15 @@ export default function RichTextEditor({
       quillRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!quillRef.current) return;
+    if (initialContent === undefined) return;
+    if (didEditRef.current) return;
+    if (initialContent === lastContentRef.current) return;
+    quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
+    lastContentRef.current = initialContent;
+  }, [initialContent]);
 
   return (
     <div

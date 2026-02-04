@@ -6,6 +6,7 @@ import "quill/dist/quill.snow.css";
 type RichTextEditorProps = {
   initialContent?: string;
   error?: boolean;
+  onChange?: (value: string) => void;
 };
 
 const toolbarOptions = [
@@ -20,6 +21,7 @@ const toolbarOptions = [
 export default function RichTextEditor({
   initialContent,
   error = false,
+  onChange,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
@@ -48,6 +50,12 @@ export default function RichTextEditor({
       if (initialContent) {
         quillRef.current.clipboard.dangerouslyPasteHTML(initialContent);
       }
+
+      if (onChange) {
+        quillRef.current.on("text-change", () => {
+          onChange(quillRef.current.root.innerHTML);
+        });
+      }
     };
 
     init();
@@ -56,7 +64,7 @@ export default function RichTextEditor({
       cancelled = true;
       quillRef.current = null;
     };
-  }, [initialContent]);
+  }, []);
 
   return (
     <div

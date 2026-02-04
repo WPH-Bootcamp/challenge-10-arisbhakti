@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import RichTextEditor from "@/components/RichTextEditor";
+import { createPost } from "@/lib/api";
 
 const suggestions = ["Programming", "Frontend", "Coding", "Design", "UI UX"];
 
@@ -10,17 +11,30 @@ type PostFormProps = {
 };
 
 export default function PostForm({ mode }: PostFormProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(
     mode === "edit" ? ["Programming", "Frontend", "Coding"] : []
   );
+  const [title, setTitle] = useState(
+    mode === "edit" ? "5 Reasons to Learn Frontend Development in 2025" : ""
+  );
+  const [content, setContent] = useState(
+    mode === "edit"
+      ? "<ul><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li></ul>"
+      : ""
+  );
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const filteredSuggestions = useMemo(() => {
     const query = tagInput.trim().toLowerCase();
     if (!query) return [];
     return suggestions.filter(
-      (item) =>
-        item.toLowerCase().includes(query) && !tags.includes(item)
+      (item) => item.toLowerCase().includes(query) && !tags.includes(item)
     );
   }, [tagInput, tags]);
 
@@ -29,49 +43,108 @@ export default function PostForm({ mode }: PostFormProps) {
     if (!cleaned || tags.includes(cleaned)) return;
     setTags((prev) => [...prev, cleaned]);
     setTagInput("");
+    setErrors((prev) => ({ ...prev, tags: "" }));
   };
 
   const removeTag = (value: string) => {
     setTags((prev) => prev.filter((tag) => tag !== value));
   };
 
-  const showErrors = false;
+  const handlePickImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (file?: File | null) => {
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setErrors((prev) => ({ ...prev, image: "" }));
+  };
+
+  const handleRemoveImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    setImageFile(null);
+  };
+
+  const validate = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!title.trim()) nextErrors.title = "Title is required";
+    if (!content || content === "<p><br></p>") {
+      nextErrors.content = "Content is required";
+    }
+    if (!tags.length) nextErrors.tags = "At least one tag is required";
+    if (!imageFile) nextErrors.image = "Cover image is required";
+    return nextErrors;
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const validation = validate();
+    if (Object.keys(validation).length) {
+      setErrors(validation);
+      return;
+    }
+    if (!imageFile) return;
+    setIsSubmitting(true);
+    setErrors({});
+    try {
+      await createPost({
+        title: title.trim(),
+        content,
+        tags,
+        image: imageFile,
+      });
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      setTitle("");
+      setContent("");
+      setTags([]);
+      setTagInput("");
+      handleRemoveImage();
+    } catch (error) {
+      setErrors({ general: "Failed to upload post" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <form className="mx-auto w-full max-w-2xl space-y-6">
+    <form className="mx-auto w-full max-w-2xl space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-semibold">Title</label>
         <input
           type="text"
           placeholder="Enter your title"
-          defaultValue={
-            mode === "edit"
-              ? "5 Reasons to Learn Frontend Development in 2025"
-              : ""
-          }
-          className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition ${
-            showErrors
-              ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-2 focus:ring-[#f43f5e]/20"
-              : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-2 focus:ring-[#0b8bd3]/20"
+          value={title}
+          onChange={(event) => {
+            setTitle(event.target.value);
+            if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+          }}
+          className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-2 ${
+            errors.title
+              ? "border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20"
+              : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
           }`}
         />
-        {showErrors && (
-          <p className="text-xs text-[#f43f5e]">Error Text Helper</p>
+        {errors.title && (
+          <p className="text-xs text-[#f43f5e]">{errors.title}</p>
         )}
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-semibold">Content</label>
         <RichTextEditor
-          error={showErrors}
-          initialContent={
-            mode === "edit"
-              ? "<ul><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li><li>Lorem ipsum dolor sit amet consectetur.</li></ul>"
-              : undefined
-          }
+          error={!!errors.content}
+          initialContent={content}
+          onChange={(value) => {
+            setContent(value);
+            if (errors.content)
+              setErrors((prev) => ({ ...prev, content: "" }));
+          }}
         />
-        {showErrors && (
-          <p className="text-xs text-[#f43f5e]">Error Text Helper</p>
+        {errors.content && (
+          <p className="text-xs text-[#f43f5e]">{errors.content}</p>
         )}
       </div>
 
@@ -79,14 +152,14 @@ export default function PostForm({ mode }: PostFormProps) {
         <label className="text-sm font-semibold">Cover Image</label>
         <div
           className={`rounded-2xl border border-dashed px-6 py-8 text-center ${
-            showErrors ? "border-[#f43f5e]" : "border-[#cbd5f5]"
+            errors.image ? "border-[#f43f5e]" : "border-[#cbd5f5]"
           }`}
         >
-          {mode === "edit" ? (
+          {imagePreview ? (
             <div className="space-y-4">
               <div className="mx-auto w-full max-w-md overflow-hidden rounded-xl">
                 <img
-                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80"
+                  src={imagePreview}
                   alt="Cover"
                   className="h-48 w-full object-cover"
                 />
@@ -94,6 +167,7 @@ export default function PostForm({ mode }: PostFormProps) {
               <div className="flex flex-wrap justify-center gap-3 text-sm">
                 <button
                   type="button"
+                  onClick={handlePickImage}
                   className="flex items-center gap-2 rounded-full border border-[#e7e9ee] px-4 py-2"
                 >
                   <svg
@@ -115,6 +189,7 @@ export default function PostForm({ mode }: PostFormProps) {
                 </button>
                 <button
                   type="button"
+                  onClick={handleRemoveImage}
                   className="flex items-center gap-2 rounded-full border border-[#fecdd3] px-4 py-2 text-[#f43f5e]"
                 >
                   <svg
@@ -159,25 +234,36 @@ export default function PostForm({ mode }: PostFormProps) {
                 </svg>
               </div>
               <p>
-                <span className="font-semibold text-[#0b8bd3]">
+                <button
+                  type="button"
+                  onClick={handlePickImage}
+                  className="font-semibold text-[#0b8bd3]"
+                >
                   Click to upload
-                </span>{" "}
+                </button>{" "}
                 or drag and drop
               </p>
               <p className="text-xs">PNG or JPG (max. 5mb)</p>
             </div>
           )}
         </div>
-        {showErrors && (
-          <p className="text-xs text-[#f43f5e]">Error Text Helper</p>
+        {errors.image && (
+          <p className="text-xs text-[#f43f5e]">{errors.image}</p>
         )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => handleImageChange(event.target.files?.[0] ?? null)}
+        />
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-semibold">Tags</label>
         <div
           className={`rounded-xl border px-4 py-2 ${
-            showErrors
+            errors.tags
               ? "border-[#f43f5e]"
               : "border-[#d9dce3] focus-within:border-[#0b8bd3] focus-within:ring-2 focus-within:ring-[#0b8bd3]/20"
           }`}
@@ -205,8 +291,7 @@ export default function PostForm({ mode }: PostFormProps) {
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   event.preventDefault();
-                  const nextTag =
-                    filteredSuggestions[0] ?? tagInput.trim();
+                  const nextTag = filteredSuggestions[0] ?? tagInput.trim();
                   addTag(nextTag);
                 }
               }}
@@ -215,8 +300,8 @@ export default function PostForm({ mode }: PostFormProps) {
             />
           </div>
         </div>
-        {showErrors && (
-          <p className="text-xs text-[#f43f5e]">Error Text Helper</p>
+        {errors.tags && (
+          <p className="text-xs text-[#f43f5e]">{errors.tags}</p>
         )}
         {filteredSuggestions.length > 0 && (
           <div className="rounded-xl border border-[#e7e9ee] bg-white p-2 shadow-sm">
@@ -236,12 +321,21 @@ export default function PostForm({ mode }: PostFormProps) {
 
       <div className="flex justify-end">
         <button
-          type="button"
-          className="h-12 w-44 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white"
+          type="submit"
+          disabled={isSubmitting}
+          className="h-12 w-44 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80"
         >
-          Finish
+          {isSubmitting ? "Uploading..." : "Finish"}
         </button>
       </div>
+      {errors.general && (
+        <p className="text-center text-xs text-[#f43f5e]">{errors.general}</p>
+      )}
+      {showToast && (
+        <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">
+          Post uploaded successfully.
+        </div>
+      )}
     </form>
   );
 }

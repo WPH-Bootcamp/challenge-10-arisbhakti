@@ -94,3 +94,44 @@ export async function createComment(postId: number, payload: CreateCommentPayloa
   );
   return response.data;
 }
+
+export type CreatePostPayload = {
+  title: string;
+  content: string;
+  tags: string[];
+  image: File;
+};
+
+export type CreatePostResponse = {
+  id: number;
+  title: string;
+  content: string;
+  tags: string[];
+  imageUrl: string;
+  imagePublicId: string;
+  createdAt: string;
+  likes: number;
+  comments: number;
+  author: {
+    id: number;
+  };
+};
+
+export async function createPost(payload: CreatePostPayload) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("title", payload.title);
+  formData.append("content", payload.content);
+  formData.append("tags", payload.tags.join(","));
+  formData.append("image", payload.image);
+  const response = await apiClient.post<CreatePostResponse>("/posts", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+}

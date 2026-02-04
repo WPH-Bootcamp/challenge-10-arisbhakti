@@ -249,15 +249,19 @@ export default function ProfilePage() {
                   key={post.id}
                   className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-6 sm:flex-row sm:items-stretch"
                 >
-                  <img
-                    src={post.imageUrl || "/dummy-home-article.png"}
-                    alt={post.title}
-                    className="h-[190px] w-full rounded-2xl object-cover sm:h-[190px] sm:w-[260px]"
-                  />
+                  <a href={`/detail/${post.id}`}>
+                    <img
+                      src={post.imageUrl || "/dummy-home-article.png"}
+                      alt={post.title}
+                      className="h-[190px] w-full rounded-2xl object-cover sm:h-[190px] sm:w-[260px]"
+                    />
+                  </a>
 
                   <div className="flex-1 sm:flex sm:min-h-[190px] sm:flex-col sm:justify-between">
                     <div className="space-y-3">
-                      <h3 className="text-base font-semibold">{post.title}</h3>
+                      <a href={`/detail/${post.id}`}>
+                        <h3 className="text-base font-semibold">{post.title}</h3>
+                      </a>
                       <div className="flex flex-wrap gap-2">
                         {post.tags.map((tag) => (
                           <span

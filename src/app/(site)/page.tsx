@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { fetchMostLikedPosts, fetchRecommendedPosts } from "@/lib/tanstackQuery";
+import {
+  fetchMostLikedPosts,
+  fetchRecommendedPosts,
+  fetchSearchPosts,
+} from "@/lib/tanstackQuery";
 import { toggleLikePost } from "@/lib/api";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
@@ -13,6 +17,7 @@ export default function Home() {
   const [likedIds, setLikedIds] = useState<number[]>([]);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -24,6 +29,16 @@ export default function Home() {
         setLikedIds([]);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const readSearch = () => {
+      const stored = localStorage.getItem("searchQuery") || "";
+      setSearchQuery(stored);
+    };
+    readSearch();
+    window.addEventListener("search-updated", readSearch);
+    return () => window.removeEventListener("search-updated", readSearch);
   }, []);
 
   const updateLikedStorage = (next: number[]) => {
@@ -71,6 +86,16 @@ export default function Home() {
     queryFn: () => fetchMostLikedPosts(1, 3),
   });
 
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+    isError: isSearchError,
+  } = useQuery({
+    queryKey: ["search-posts", searchQuery],
+    queryFn: () => fetchSearchPosts(searchQuery, 1, 100),
+    enabled: !!searchQuery.trim(),
+  });
+
   const recommendedPosts = useMemo(() => {
     return (
       recommendedData?.data.map((post) => ({
@@ -91,18 +116,171 @@ export default function Home() {
 
   const lastPage = recommendedData?.lastPage ?? 1;
   const pages = Array.from({ length: lastPage }, (_, index) => index + 1);
+  const isSearchMode = !!searchQuery.trim();
+  const searchPosts =
+    searchData?.data.map((post) => ({
+      ...post,
+      excerpt: stripHtml(post.content),
+    })) ?? [];
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-6 py-10">
-      <div className="flex flex-col gap-10 lg:flex-row">
+      <div className={`flex flex-col gap-10 ${isSearchMode ? "" : "lg:flex-row"}`}>
         <section className="w-full lg:flex-1">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-xl leading-8.5 -tracking-[0.03em] md:text-[28px] md-leading-[38px]">
-              Recommend For You
+              {isSearchMode
+                ? `Search Results for “${searchQuery.trim()}”`
+                : "Recommend For You"}
             </h2>
           </div>
 
           <div className="mt-6 space-y-8">
+            {isSearchMode && isSearchLoading && (
+              <div className="space-y-6">
+                {[...Array(2)].map((_, index) => (
+                  <div
+                    key={`loading-search-${index}`}
+                    className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch"
+                  >
+                    <div className="hidden md:flex md:h-64.5 md:w-85 rounded-[6px] bg-[#eef0f4] animate-pulse" />
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 w-3/4 rounded bg-[#eef0f4] animate-pulse" />
+                      <div className="h-4 w-1/2 rounded bg-[#eef0f4] animate-pulse" />
+                      <div className="h-4 w-full rounded bg-[#eef0f4] animate-pulse" />
+                      <div className="h-4 w-2/3 rounded bg-[#eef0f4] animate-pulse" />
+                      <div className="h-4 w-1/3 rounded bg-[#eef0f4] animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isSearchMode && isSearchError && (
+              <div className="rounded-2xl border border-[#fca5a5] bg-[#fee2e2] px-5 py-4 text-sm text-[#b91c1c]">
+                Failed to load search results. Please try again.
+              </div>
+            )}
+
+            {isSearchMode &&
+              !isSearchLoading &&
+              !isSearchError &&
+              searchPosts.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                  <img
+                    src="/empty-post-icon.png"
+                    alt="No results"
+                    className="h-24 w-24"
+                  />
+                  <p className="text-base font-semibold">No results found</p>
+                  <p className="text-sm text-[#6b7280]">
+                    Try using different keywords
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem("searchQuery", "");
+                      setSearchQuery("");
+                      window.dispatchEvent(new Event("search-updated"));
+                    }}
+                    className="mt-2 h-11 rounded-full bg-[#0b8bd3] px-8 text-sm font-semibold text-white"
+                  >
+                    Back to Home
+                  </button>
+                </div>
+              )}
+
+            {isSearchMode &&
+              !isSearchLoading &&
+              !isSearchError &&
+              searchPosts.map((post) => (
+                <article
+                  key={`search-${post.id}`}
+                  className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-8 md:flex-row md:items-stretch "
+                >
+                  <Link href={`/detail/${post.id}`} className="hidden md:flex">
+                    <img
+                      src={post.imageUrl || "/dummy-home-article.png"}
+                      alt={post.title}
+                      className="rounded-[6px] object-cover md:h-64.5 md:w-85"
+                    />
+                  </Link>
+                  <div className="flex-1 space-y-3">
+                    <Link href={`/detail/${post.id}`}>
+                      <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5">
+                        {post.title}
+                      </h3>
+                    </Link>
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.map((tag) => (
+                        <span
+                          key={`${post.id}-search-${tag}`}
+                          className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-[#6b7280]">
+                      <Link
+                        href={`/profile/${post.author.id}`}
+                        className="flex items-center gap-2"
+                      >
+                        <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
+                          <img
+                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                            alt={post.author.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-[#111827]">
+                          {post.author.name}
+                        </span>
+                      </Link>
+                      <span>•</span>
+                      <span className="text-neutral-600">
+                        {new Date(post.createdAt).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-[#6b7280]">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLike(post.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <img
+                          src={
+                            likedIds.includes(post.id)
+                              ? "/liked-icon.svg"
+                              : "/like-icon.svg"
+                          }
+                          alt="Likes"
+                          className="h-4 w-4"
+                        />
+                        <span className="text-neutral-600">{post.likes}</span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src="/comment-icon.svg"
+                          alt="Comments"
+                          className="h-4 w-4"
+                        />
+                        <span className="text-neutral-600">
+                          {post.comments}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+
             {isRecommendedLoading && (
               <div className="space-y-6">
                 {[...Array(3)].map((_, index) => (
@@ -129,7 +307,8 @@ export default function Home() {
               </div>
             )}
 
-            {!isRecommendedLoading &&
+            {!isSearchMode &&
+              !isRecommendedLoading &&
               !isRecommendedError &&
               recommendedPosts.map((post) => (
                 <article
@@ -220,7 +399,8 @@ export default function Home() {
               ))}
           </div>
 
-          <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
+          {!isSearchMode && (
+            <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
             <button
               className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
@@ -276,10 +456,12 @@ export default function Home() {
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
-          </div>
+            </div>
+          )}
         </section>
 
-        <aside className="w-full lg:w-[320px]">
+        {!isSearchMode && (
+          <aside className="w-full lg:w-[320px]">
           <div className="lg:sticky lg:top-8">
             <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">
               <h2 className="text-xl font-bold leading-8.5 -tracking-[0.03em md:text-2xl md:leading-9">
@@ -353,7 +535,8 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </aside>
+          </aside>
+        )}
       </div>
       {showToast && (
         <div className="fixed right-6 top-6 z-50 rounded-2xl bg-[#0b8bd3] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(11,139,211,0.35)]">

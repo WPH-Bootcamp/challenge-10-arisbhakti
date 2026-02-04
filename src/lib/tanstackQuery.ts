@@ -51,6 +51,13 @@ export async function fetchMostLikedPosts(page = 1, limit = 3) {
   return response.data;
 }
 
+export async function fetchSearchPosts(query: string, page = 1, limit = 100) {
+  const response = await apiClient.get<RecommendedResponse>(
+    `/posts/search?query=${encodeURIComponent(query)}&limit=${limit}&page=${page}`
+  );
+  return response.data;
+}
+
 export type PostDetail = RecommendedPost;
 
 export type UserProfile = {

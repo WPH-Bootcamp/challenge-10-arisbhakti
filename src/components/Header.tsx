@@ -11,6 +11,7 @@ import {
 import { fetchUserById } from "@/lib/tanstackQuery";
 import { getAuthPayload } from "@/lib/auth";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Header() {
   const [isLogin, setIsLogin] = useState(false);
@@ -18,6 +19,9 @@ export default function Header() {
   const [userId, setUserId] = useState<number | null>(null);
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
 
   const readAuth = () => {
     if (typeof window === "undefined") return;
@@ -58,6 +62,8 @@ export default function Header() {
     readAuth();
     const handleStorage = () => readAuth();
     const handleProfileUpdated = () => readAuth();
+    const storedSearch = localStorage.getItem("searchQuery") || "";
+    setSearchValue(storedSearch);
     window.addEventListener("storage", handleStorage);
     window.addEventListener("profile-updated", handleProfileUpdated);
     return () => {
@@ -99,7 +105,19 @@ export default function Header() {
 
         <div className="hidden w-full max-w-md items-center gap-3 rounded-full border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex">
           <img src="/search-icon.png" alt="Search" className="h-4 w-4" />
-          <span>Search</span>
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSearchValue(value);
+              localStorage.setItem("searchQuery", value);
+              window.dispatchEvent(new Event("search-updated"));
+              if (pathname !== "/") router.push("/");
+            }}
+            placeholder="Search"
+            className="w-full bg-transparent text-sm text-[#111827] placeholder:text-[#9ca3af] outline-none"
+          />
         </div>
 
         <div className="flex items-center gap-4">

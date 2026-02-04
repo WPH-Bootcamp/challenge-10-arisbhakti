@@ -318,13 +318,16 @@ export default function DetailPage() {
         <div className="mt-8 space-y-6 border-t border-[#eef0f4] pt-6">
           {latestComments.map((comment) => (
             <div key={comment.id} className="flex gap-3">
-              <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
-                <img
-                  src={comment.author.avatarUrl || "/dummy-home-article.png"}
-                  alt={comment.author.name}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+            <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
+              <img
+                src={
+                  comment.author.avatarUrl ||
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                }
+                alt={comment.author.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   {comment.author.name}
@@ -428,7 +431,8 @@ export default function DetailPage() {
                     <div className="h-9 w-9 overflow-hidden rounded-full bg-[#e5e7eb]">
                       <img
                         src={
-                          comment.author.avatarUrl || "/dummy-home-article.png"
+                          comment.author.avatarUrl ||
+                          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
                         }
                         alt={comment.author.name}
                         className="h-full w-full object-cover"

@@ -5,9 +5,18 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchMeProfile,
+  fetchPostComments,
+  fetchPostLikes,
   fetchUserById,
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
@@ -24,6 +33,9 @@ export default function ProfilePage() {
   const isMe = paramId === "me";
   const numericId = Number(paramId);
   const [activeTab, setActiveTab] = useState<"posts" | "password">("posts");
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [statsPostId, setStatsPostId] = useState<number | null>(null);
+  const [statsTab, setStatsTab] = useState<"like" | "comment">("like");
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,6 +72,32 @@ export default function ProfilePage() {
 
   const posts = useMemo(() => userPosts?.posts.data ?? [], [userPosts]);
   const postsCount = posts.length;
+
+  const {
+    data: statsLikes,
+    isLoading: isLikesLoading,
+    isError: isLikesError,
+  } = useQuery({
+    queryKey: ["post-likes", statsPostId],
+    queryFn: () => fetchPostLikes(statsPostId!),
+    enabled: statsOpen && !!statsPostId,
+  });
+
+  const {
+    data: statsComments,
+    isLoading: isCommentsLoading,
+    isError: isCommentsError,
+  } = useQuery({
+    queryKey: ["post-comments", statsPostId],
+    queryFn: () => fetchPostComments(statsPostId!),
+    enabled: statsOpen && !!statsPostId,
+  });
+
+  const handleOpenStats = (postId: number) => {
+    setStatsPostId(postId);
+    setStatsTab("like");
+    setStatsOpen(true);
+  };
 
   if (isProfileLoading) {
     return (
@@ -289,6 +327,10 @@ export default function ProfilePage() {
                         <a
                           href="#"
                           className="font-semibold text-[#0b8bd3] underline underline-offset-2"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            handleOpenStats(post.id);
+                          }}
                         >
                           Statistic
                         </a>
@@ -419,6 +461,193 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      <Dialog open={statsOpen} onOpenChange={setStatsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Statistic</DialogTitle>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                aria-label="Close"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </DialogClose>
+          </DialogHeader>
+
+          <div className="mt-4">
+            <div className="relative flex items-center border-b border-[#e7e9ee] text-sm">
+              <div className="flex w-full">
+                <button
+                  type="button"
+                  onClick={() => setStatsTab("like")}
+                  className={`flex flex-1 items-center justify-center gap-2 py-3 font-semibold transition-colors ${
+                    statsTab === "like"
+                      ? "text-primary-300"
+                      : "text-neutral-950"
+                  }`}
+                >
+                  <img
+                    src={statsTab === "like" ? "/liked-icon.svg" : "/like-icon.svg"}
+                    alt="Like"
+                    className="h-4 w-4"
+                  />
+                  Like
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatsTab("comment")}
+                  className={`flex flex-1 items-center justify-center gap-2 py-3 font-semibold transition-colors ${
+                    statsTab === "comment"
+                      ? "text-primary-300"
+                      : "text-neutral-950"
+                  }`}
+                >
+                  <img
+                    src={
+                      statsTab === "comment"
+                        ? "/comment-tab-selected.svg"
+                        : "/comment-tab.svg"
+                    }
+                    alt="Comment"
+                    className="h-4 w-4"
+                  />
+                  Comment
+                </button>
+              </div>
+              <span
+                className={`absolute bottom-0 left-0 h-[2px] w-1/2 bg-primary-300 transition-transform duration-300 ${
+                  statsTab === "comment" ? "translate-x-full" : "translate-x-0"
+                }`}
+              />
+            </div>
+
+            <div className="mt-5">
+              {statsTab === "like" ? (
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold">
+                    Like ({statsLikes?.length ?? 0})
+                  </h3>
+                  {isLikesLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, index) => (
+                        <div
+                          key={`like-loading-${index}`}
+                          className="h-14 rounded-xl bg-[#eef0f4] animate-pulse"
+                        />
+                      ))}
+                    </div>
+                  ) : isLikesError ? (
+                    <div className="rounded-xl border border-[#fca5a5] bg-[#fee2e2] px-4 py-3 text-sm text-[#b91c1c]">
+                      Failed to load likes.
+                    </div>
+                  ) : statsLikes && statsLikes.length > 0 ? (
+                    <div className="space-y-4">
+                      {statsLikes.map((user) => (
+                        <div
+                          key={`like-${user.id}`}
+                          className="flex items-center gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
+                        >
+                          <div className="h-10 w-10 overflow-hidden rounded-full bg-[#e5e7eb]">
+                            <img
+                              src={
+                                user.avatarUrl ||
+                                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                              }
+                              alt={user.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">{user.name}</p>
+                            <p className="text-xs text-[#6b7280]">
+                              {user.headline || "Frontend Developer"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#6b7280]">
+                      No likes yet.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold">
+                    Comment ({statsComments?.length ?? 0})
+                  </h3>
+                  {isCommentsLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, index) => (
+                        <div
+                          key={`comment-loading-${index}`}
+                          className="h-20 rounded-xl bg-[#eef0f4] animate-pulse"
+                        />
+                      ))}
+                    </div>
+                  ) : isCommentsError ? (
+                    <div className="rounded-xl border border-[#fca5a5] bg-[#fee2e2] px-4 py-3 text-sm text-[#b91c1c]">
+                      Failed to load comments.
+                    </div>
+                  ) : statsComments && statsComments.length > 0 ? (
+                    <div className="space-y-4">
+                      {statsComments.map((comment) => (
+                        <div
+                          key={`comment-${comment.id}`}
+                          className="flex gap-3 border-b border-[#eef0f4] pb-4 last:border-b-0 last:pb-0"
+                        >
+                          <div className="h-10 w-10 overflow-hidden rounded-full bg-[#e5e7eb]">
+                            <img
+                              src={
+                                comment.author.avatarUrl ||
+                                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                              }
+                              alt={comment.author.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold">
+                              {comment.author.name}
+                            </p>
+                            <p className="text-xs text-[#6b7280]">
+                              {formatDate(comment.createdAt)}
+                            </p>
+                            <p className="mt-2 text-sm text-[#4b5563]">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#6b7280]">
+                      No comments yet.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

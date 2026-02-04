@@ -63,6 +63,13 @@ export type UserProfile = {
   avatarPublicId?: string;
 };
 
+export type UserSummary = {
+  id: number;
+  name: string;
+  headline?: string | null;
+  avatarUrl?: string | null;
+};
+
 export type CommentItem = {
   id: number;
   content: string;
@@ -96,6 +103,13 @@ export async function fetchMeProfile(token: string) {
 export async function fetchPostComments(postId: number) {
   const response = await apiClient.get<CommentItem[]>(
     `/posts/${postId}/comments`
+  );
+  return response.data;
+}
+
+export async function fetchPostLikes(postId: number) {
+  const response = await apiClient.get<UserSummary[]>(
+    `/posts/${postId}/likes`
   );
   return response.data;
 }

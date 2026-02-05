@@ -11,6 +11,7 @@ import {
 } from "@/lib/tanstackQuery";
 import { toggleLikePost } from "@/lib/api";
 import Toast from "@/components/Toast";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 const stripHtml = (value: string) => value.replace(/<[^>]+>/g, "");
 
@@ -19,6 +20,9 @@ export default function Home() {
   const [likedIds, setLikedIds] = useState<number[]>([]);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
   const handlePageChange = (nextPage: number) => {
@@ -62,15 +66,16 @@ export default function Home() {
         ? likedIds.filter((id) => id !== postId)
         : [...likedIds, postId];
       updateLikedStorage(next);
+      setToastVariant("success");
       setToastMessage(isLiked ? "Unliked post." : "Liked post.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       queryClient.invalidateQueries({ queryKey: ["recommended-posts"] });
       queryClient.invalidateQueries({ queryKey: ["most-liked-posts"] });
     } catch (error) {
-      setToastMessage(
-        error instanceof Error ? error.message : "Failed to like post.",
-      );
+      const message = getApiErrorMessage(error, "Failed to like post.");
+      setToastVariant("error");
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
@@ -579,7 +584,13 @@ export default function Home() {
           </aside>
         )}
       </div>
-      {showToast && <Toast message={toastMessage} />}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          position={toastVariant === "error" ? "top" : "center"}
+        />
+      )}
     </main>
   );
 }

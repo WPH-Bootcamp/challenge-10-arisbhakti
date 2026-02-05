@@ -317,7 +317,11 @@ export default function RegisterPage() {
       </div>
 
       {showToast && (
-        <Toast message="Register successful, please login." />
+        <Toast
+          message="Register successful, please login."
+          variant="success"
+          position="center"
+        />
       )}
     </div>
   );

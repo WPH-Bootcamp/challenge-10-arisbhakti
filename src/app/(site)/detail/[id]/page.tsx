@@ -12,6 +12,7 @@ import {
 } from "@/lib/tanstackQuery";
 import { createComment, toggleLikePost } from "@/lib/api";
 import { getAuthPayload } from "@/lib/auth";
+import { getApiErrorMessage } from "@/lib/apiError";
 import {
   Dialog,
   DialogClose,
@@ -44,6 +45,9 @@ export default function DetailPage() {
   const [likedIds, setLikedIds] = useState<number[]>([]);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success"
+  );
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const authPayload = getAuthPayload(token);
@@ -74,14 +78,15 @@ export default function DetailPage() {
         : [...likedIds, post.id];
       await toggleLikePost(post.id);
       updateLikedStorage(next);
+      setToastVariant("success");
       setToastMessage(isLiked ? "Unliked post." : "Liked post.");
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       queryClient.invalidateQueries({ queryKey: ["post-detail", post.id] });
     } catch (error) {
-      setToastMessage(
-        error instanceof Error ? error.message : "Failed to like post.",
-      );
+      const message = getApiErrorMessage(error, "Failed to like post.");
+      setToastVariant("error");
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
@@ -192,8 +197,7 @@ export default function DetailPage() {
         setCommentValue("");
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to post comment";
+      const message = getApiErrorMessage(error, "Failed to post comment");
       if (isModal) {
         setModalCommentError(message);
       } else {
@@ -598,7 +602,13 @@ export default function DetailPage() {
         )}
       </section>
 
-      {showToast && <Toast message={toastMessage} />}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          position={toastVariant === "error" ? "top" : "center"}
+        />
+      )}
     </main>
   );
 }

@@ -11,6 +11,7 @@ import {
   fetchUserByUsername,
 } from "@/lib/tanstackQuery";
 import { changePassword, deletePost, updateProfile } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/apiError";
 import {
   Dialog,
   DialogClose,
@@ -67,6 +68,9 @@ export default function ProfilePage() {
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success"
+  );
   const [token, setToken] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -150,15 +154,16 @@ export default function ProfilePage() {
     setIsDeleting(true);
     try {
       await deletePost(deletePostId);
+      setToastVariant("success");
       setToastMessage("Post deleted successfully.");
       setShowToast(true);
       setDeleteOpen(false);
       queryClient.invalidateQueries({ queryKey: ["profile-posts"] });
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
-      setToastMessage(
-        error instanceof Error ? error.message : "Failed to delete post.",
-      );
+      const message = getApiErrorMessage(error, "Failed to delete post.");
+      setToastVariant("error");
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } finally {
@@ -243,14 +248,15 @@ export default function ProfilePage() {
         ...updated,
       }));
       queryClient.invalidateQueries({ queryKey: ["auth-user", updated.id] });
+      setToastVariant("success");
       setToastMessage("Profile updated successfully.");
       setShowToast(true);
       setEditOpen(false);
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
-      setToastMessage(
-        error instanceof Error ? error.message : "Failed to update profile.",
-      );
+      const message = getApiErrorMessage(error, "Failed to update profile.");
+      setToastVariant("error");
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } finally {
@@ -302,6 +308,7 @@ export default function ProfilePage() {
         newPassword: passwordForm.newPassword.trim(),
         confirmPassword: passwordForm.confirmPassword.trim(),
       });
+      setToastVariant("success");
       setToastMessage(response.message || "Password updated successfully");
       setShowToast(true);
       setPasswordForm({
@@ -312,9 +319,9 @@ export default function ProfilePage() {
       setPasswordErrors({});
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
-      setToastMessage(
-        error instanceof Error ? error.message : "Failed to update password.",
-      );
+      const message = getApiErrorMessage(error, "Failed to update password.");
+      setToastVariant("error");
+      setToastMessage(message);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } finally {
@@ -1096,7 +1103,13 @@ export default function ProfilePage() {
         </DialogContent>
       </Dialog>
 
-      {showToast && <Toast message={toastMessage} />}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          position={toastVariant === "error" ? "top" : "center"}
+        />
+      )}
     </main>
   );
 }

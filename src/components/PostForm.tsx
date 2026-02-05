@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import RichTextEditor from "@/components/RichTextEditor";
 import { createPost, updatePost } from "@/lib/api";
 import Toast from "@/components/Toast";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 const suggestions = ["Programming", "Frontend", "Coding", "Design", "UI UX"];
 
@@ -36,6 +37,9 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success"
+  );
   const hydratedRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -138,6 +142,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
           image: imageFile ?? null,
           removeImage: removeImage ? true : imageFile ? false : undefined,
         });
+        setToastVariant("success");
         setToastMessage("Post updated successfully.");
       } else {
         await createPost({
@@ -146,6 +151,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
           tags,
           image: imageFile!,
         });
+        setToastVariant("success");
         setToastMessage("Post uploaded successfully.");
         setTitle("");
         setContent("");
@@ -157,10 +163,17 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        mode === "edit" ? "Failed to update post" : "Failed to upload post"
+      );
       setErrors({
-        general:
-          mode === "edit" ? "Failed to update post" : "Failed to upload post",
+        general: message,
       });
+      setToastVariant("error");
+      setToastMessage(message);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -396,7 +409,11 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
         <p className="text-center text-xs text-[#f43f5e]">{errors.general}</p>
       )}
       {showToast && (
-        <Toast message={toastMessage} />
+        <Toast
+          message={toastMessage}
+          variant={toastVariant}
+          position={toastVariant === "error" ? "top" : "center"}
+        />
       )}
     </form>
   );

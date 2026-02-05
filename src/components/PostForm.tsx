@@ -310,7 +310,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
                 <button
                   type="button"
                   onClick={handlePickImage}
-                  className="font-semibold text-[#0b8bd3]"
+                  className="font-semibold text-primary-300 cursor-pointer"
                 >
                   Click to upload
                 </button>{" "}

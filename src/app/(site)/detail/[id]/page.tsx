@@ -415,7 +415,7 @@ export default function DetailPage() {
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="text-left text-sm font-semibold text-primary-300 cursor-pointer"
+                className="text-left text-sm font-semibold text-primary-300 cursor-pointer underline underline-offset-4"
               >
                 See All Comments
               </button>
@@ -538,15 +538,15 @@ export default function DetailPage() {
       <section className="mt-10 border-t border-[#eef0f4] pt-8">
         <h2 className="text-lg font-semibold">Another Post</h2>
         {anotherPost ? (
-          <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-[#e7e9ee] p-4 sm:flex-row">
+          <div className="mt-5 flex flex-col gap-4 rounded-2xl sm:flex-row">
             <Link href={`/detail/${anotherPost.id}`}>
               <img
                 src={anotherPost.imageUrl || "/dummy-home-article.png"}
                 alt={anotherPost.title}
-                className="h-[140px] w-full rounded-xl object-cover sm:h-[120px] sm:w-[200px] hidden md:block"
+                className="h-[258px] w-[340px] rounded-[6px] object-cover hidden md:block"
               />
             </Link>
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 flex flex-col gap-4">
               <Link href={`/detail/${anotherPost.id}`}>
                 <h3 className="text-base font-semibold">{anotherPost.title}</h3>
               </Link>

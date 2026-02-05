@@ -7,11 +7,11 @@ export default function SiteLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white text-[#111827]">
+    <div className="min-h-screen bg-white text-[#111827] flex flex-col">
       <div className="fixed left-0 top-0 z-50 w-full">
         <Header />
       </div>
-      <div className="pt-20">{children}</div>
+      <div className="pt-20 flex-1">{children}</div>
       <Footer />
     </div>
   );

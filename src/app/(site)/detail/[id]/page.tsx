@@ -241,7 +241,7 @@ export default function DetailPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-10">
+    <main className="mx-auto w-full max-w-[800px] px-6 py-10">
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold sm:text-3xl">{post.title}</h1>
         <div className="flex flex-wrap gap-2">
@@ -301,7 +301,7 @@ export default function DetailPage() {
         <img
           src={post.imageUrl || "/dummy-home-article.png"}
           alt={post.title}
-          className="h-[220px] w-full rounded-2xl object-cover sm:h-[360px]"
+          className="h-50.75 md:h-151.75 w-full rounded-[6px] object-cover "
         />
       </div>
 
@@ -543,7 +543,7 @@ export default function DetailPage() {
               <img
                 src={anotherPost.imageUrl || "/dummy-home-article.png"}
                 alt={anotherPost.title}
-                className="h-[140px] w-full rounded-xl object-cover sm:h-[120px] sm:w-[200px]"
+                className="h-[140px] w-full rounded-xl object-cover sm:h-[120px] sm:w-[200px] hidden md:block"
               />
             </Link>
             <div className="flex-1 space-y-2">

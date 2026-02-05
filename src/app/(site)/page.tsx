@@ -195,7 +195,7 @@ export default function Home() {
 
   if (isMobileSearchMode) {
     return (
-      <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:py-12 md:px-0">
+      <main className="mx-auto w-full max-w-300 px-4 py-6 md:py-12 md:px-0">
         <div className="mx-auto w-full max-w-xl space-y-6">
           <div className="flex items-center gap-3 rounded-full border border-[#e7e9ee] px-4 py-3 text-sm text-[#6b7280]">
             <img src="/search-input.svg" alt="Search" className="h-4 w-4" />
@@ -330,7 +330,7 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:py-12 md:px-0">
+    <main className="mx-auto w-full max-w-300 px-4 py-6 md:py-12 md:px-0">
       <div
         className={`flex flex-col gap-10 ${isSearchMode ? "" : "lg:flex-row"}`}
       >

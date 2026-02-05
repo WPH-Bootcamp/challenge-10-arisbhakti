@@ -105,7 +105,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 left-0 z-50 w-full border-b border-[#e7e9ee] bg-white text-neutral-950 h-16 md:h-20 flex items-center shadow-sm">
-      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-4 py-0 md:px-0">
+      <div className="mx-auto flex w-full max-w-300 items-center justify-between gap-4 px-4 py-0 md:px-0">
         <Link
           href="/"
           onClick={() => {
@@ -120,7 +120,7 @@ export default function Header() {
             <img
               src="/your-logo.svg"
               alt="Your Logo"
-              className="w-5 h-[22px] md:w-[30px] md:h-[32px]"
+              className="w-5 h-5.5 md:w-7.5 md:h-8"
             />
             <span className="text-base leading-6 font-semibold md:text-2xl md:leading-9">
               Your Logo
@@ -128,7 +128,7 @@ export default function Header() {
           </div>
         </Link>
 
-        <div className="hidden  w-[377px] items-center gap-3 rounded-2xl border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex h-12">
+        <div className="hidden  w-94.25 items-center gap-3 rounded-2xl border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex h-12">
           <img src="/search-input.svg" alt="Search" className="h-6 w-6" />
           <input
             type="text"
@@ -322,7 +322,7 @@ export default function Header() {
             </a>
             <a
               href="/register"
-              className="w-full max-w-[220px] rounded-full bg-primary-300 px-6 py-3 text-center text-sm font-semibold text-white"
+              className="w-full max-w-55 rounded-full bg-primary-300 px-6 py-3 text-center text-sm font-semibold text-white"
             >
               Register
             </a>

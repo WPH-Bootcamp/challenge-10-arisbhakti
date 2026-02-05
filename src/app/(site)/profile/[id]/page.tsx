@@ -925,7 +925,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               <span
-                className={`absolute bottom-0 left-0 h-[2px] w-1/2 bg-primary-300 transition-transform duration-300 ${
+                className={`absolute bottom-0 left-0 h-0.5 w-1/2 bg-primary-300 transition-transform duration-300 ${
                   statsTab === "comment" ? "translate-x-full" : "translate-x-0"
                 }`}
               />

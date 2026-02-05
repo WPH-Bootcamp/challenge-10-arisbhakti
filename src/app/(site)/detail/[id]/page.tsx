@@ -219,7 +219,7 @@ export default function DetailPage() {
           <div className="h-7 w-3/4 rounded bg-[#eef0f4]" />
           <div className="h-4 w-1/2 rounded bg-[#eef0f4]" />
           <div className="h-4 w-2/3 rounded bg-[#eef0f4]" />
-          <div className="h-[220px] w-full rounded-2xl bg-[#eef0f4]" />
+          <div className="h-55 w-full rounded-2xl bg-[#eef0f4]" />
           <div className="space-y-3">
             <div className="h-4 w-full rounded bg-[#eef0f4]" />
             <div className="h-4 w-full rounded bg-[#eef0f4]" />
@@ -241,7 +241,7 @@ export default function DetailPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[800px] px-6 py-10">
+    <main className="mx-auto w-full max-w-200 px-6 py-10">
       <div className="space-y-4">
         <h1 className="text-2xl font-semibold sm:text-3xl">{post.title}</h1>
         <div className="flex flex-wrap gap-2">
@@ -543,7 +543,7 @@ export default function DetailPage() {
               <img
                 src={anotherPost.imageUrl || "/dummy-home-article.png"}
                 alt={anotherPost.title}
-                className="h-[258px] w-[340px] rounded-[6px] object-cover hidden md:block"
+                className="h-64.5 w-85 rounded-[6px] object-cover hidden md:block"
               />
             </Link>
             <div className="flex-1 flex flex-col gap-4">

@@ -100,7 +100,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-[420px] rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+      <div className="w-full max-w-105 rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
         <div className="px-8 py-7">
           <h1 className="text-2xl font-semibold text-[#111827]">Sign In</h1>
           <form className="mt-6 space-y-5" onSubmit={handleSubmit}>

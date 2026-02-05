@@ -8,10 +8,8 @@ export default function SiteLayout({
 }) {
   return (
     <div className="min-h-screen bg-white text-[#111827] flex flex-col">
-      <div className="fixed left-0 top-0 z-50 w-full">
-        <Header />
-      </div>
-      <div className="pt-20 flex-1">{children}</div>
+      <Header />
+      <div className="pt-0 md:pt-0 flex-1">{children}</div>
       <Footer />
     </div>
   );

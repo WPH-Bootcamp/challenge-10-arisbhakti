@@ -21,7 +21,7 @@ export default function Home() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
@@ -129,6 +129,16 @@ export default function Home() {
 
   const lastPage = recommendedData?.lastPage ?? 1;
   const pages = Array.from({ length: lastPage }, (_, index) => index + 1);
+  const maxVisiblePages = 3;
+  const startPage = Math.max(
+    1,
+    Math.min(page - 2, lastPage - maxVisiblePages + 1),
+  );
+  const endPage = Math.min(lastPage, startPage + maxVisiblePages - 1);
+  const visiblePages = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, index) => startPage + index,
+  );
   const isSearchMode = !!searchQuery.trim();
   const searchPosts =
     searchData?.data.map((post) => ({
@@ -158,7 +168,7 @@ export default function Home() {
   }, [authorQueries, authorIds]);
 
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-6 py-10">
+    <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:py-12 md:px-0">
       <div
         className={`flex flex-col gap-10 ${isSearchMode ? "" : "lg:flex-row"}`}
       >
@@ -305,7 +315,7 @@ export default function Home() {
                         />
                         <span className="text-neutral-600">{post.likes}</span>
                       </button>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
                         <img
                           src="/comment-icon.svg"
                           alt="Comments"
@@ -361,7 +371,7 @@ export default function Home() {
                       className="rounded-[6px] object-cover md:h-64.5 md:w-85"
                     />
                   </Link>
-                  <div className="flex-1 space-y-3">
+                  <div className="flex flex-col gap-3 flex-1">
                     <Link href={`/detail/${post.id}`}>
                       <h3 className="text-base font-bold leading-7.5 -tracking-[0.03em] md:text-xl md:leading-8.5">
                         {post.title}
@@ -442,7 +452,7 @@ export default function Home() {
           </div>
 
           {!isSearchMode && (
-            <div className="mt-8 flex items-center justify-center gap-3 text-sm text-neutral-600">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-neutral-600">
               <button
                 className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
                 onClick={() => handlePageChange(Math.max(1, page - 1))}
@@ -463,8 +473,8 @@ export default function Home() {
                 </svg>
                 Previous
               </button>
-              <div className="flex items-center gap-2">
-                {pages.map((pageNumber) => (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {visiblePages.map((pageNumber) => (
                   <button
                     key={pageNumber}
                     className={`h-9 w-9 rounded-full border border-[#e7e9ee] ${
@@ -477,6 +487,9 @@ export default function Home() {
                     {pageNumber}
                   </button>
                 ))}
+                {endPage < lastPage && (
+                  <span className="px-1 text-neutral-500">...</span>
+                )}
               </div>
               <button
                 className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
@@ -503,85 +516,88 @@ export default function Home() {
         </section>
 
         {!isSearchMode && (
-          <aside className="w-full lg:w-[320px]">
-            <div className="lg:sticky lg:top-8">
-              <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">
-                <h2 className="text-xl font-bold leading-8.5 -tracking-[0.03em md:text-2xl md:leading-9">
-                  Most Liked
-                </h2>
-                <div className="mt-6 space-y-6">
-                  {isMostLikedLoading && (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, index) => (
-                        <div
-                          key={`loading-liked-${index}`}
-                          className="space-y-2 border-b border-[#e7e9ee] pb-6"
-                        >
-                          <div className="h-4 w-3/4 rounded bg-[#eef0f4] animate-pulse" />
-                          <div className="h-3 w-full rounded bg-[#eef0f4] animate-pulse" />
-                          <div className="h-3 w-1/2 rounded bg-[#eef0f4] animate-pulse" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {isMostLikedError && (
-                    <div className="rounded-2xl border border-[#fca5a5] bg-[#fee2e2] px-5 py-4 text-sm text-[#b91c1c]">
-                      Failed to load most liked posts.
-                    </div>
-                  )}
-
-                  {!isMostLikedLoading &&
-                    !isMostLikedError &&
-                    mostLikedPosts.map((post) => (
-                      <article
-                        key={post.id}
-                        className="space-y-3 border-b border-[#e7e9ee] pb-6"
-                      >
-                        <Link href={`/detail/${post.id}`}>
-                          <h3 className="text-base leading-7.5 -tracking-[0.03em] font-bold">
-                            {post.title}
-                          </h3>
-                        </Link>
-                        <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
-                          {post.excerpt}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-[#6b7280]">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleLike(post.id)}
-                            className="flex items-center gap-2 cursor-pointer"
+          <>
+            <div className="h-3 w-full bg-neutral-300 lg:hidden" />
+            <aside className="w-full lg:w-[320px]">
+              <div className="lg:sticky lg:top-8">
+                <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">
+                  <h2 className="text-xl font-bold leading-8.5 -tracking-[0.03em md:text-2xl md:leading-9">
+                    Most Liked
+                  </h2>
+                  <div className="mt-6 space-y-6">
+                    {isMostLikedLoading && (
+                      <div className="space-y-4">
+                        {[...Array(3)].map((_, index) => (
+                          <div
+                            key={`loading-liked-${index}`}
+                            className="space-y-2 border-b border-[#e7e9ee] pb-6"
                           >
-                            <img
-                              src={
-                                likedIds.includes(post.id)
-                                  ? "/liked-icon.svg"
-                                  : "/like-icon.svg"
-                              }
-                              alt="Likes"
-                              className="h-4 w-4"
-                            />
-                            <span className="text-neutral-600">
-                              {post.likes}
-                            </span>
-                          </button>
-                          <div className="flex items-center gap-2">
-                            <img
-                              src="/comment-icon.svg"
-                              alt="Comments"
-                              className="h-4 w-4"
-                            />
-                            <span className="text-neutral-600">
-                              {post.comments}
-                            </span>
+                            <div className="h-4 w-3/4 rounded bg-[#eef0f4] animate-pulse" />
+                            <div className="h-3 w-full rounded bg-[#eef0f4] animate-pulse" />
+                            <div className="h-3 w-1/2 rounded bg-[#eef0f4] animate-pulse" />
                           </div>
-                        </div>
-                      </article>
-                    ))}
+                        ))}
+                      </div>
+                    )}
+
+                    {isMostLikedError && (
+                      <div className="rounded-2xl border border-[#fca5a5] bg-[#fee2e2] px-5 py-4 text-sm text-[#b91c1c]">
+                        Failed to load most liked posts.
+                      </div>
+                    )}
+
+                    {!isMostLikedLoading &&
+                      !isMostLikedError &&
+                      mostLikedPosts.map((post) => (
+                        <article
+                          key={post.id}
+                          className="space-y-3 border-b border-[#e7e9ee] pb-6"
+                        >
+                          <Link href={`/detail/${post.id}`}>
+                            <h3 className="text-base leading-7.5 -tracking-[0.03em] font-bold">
+                              {post.title}
+                            </h3>
+                          </Link>
+                          <p className="text-xs leading-6 -tracking-[0.03em] md:text-sm md:leading-7 line-clamp-2">
+                            {post.excerpt}
+                          </p>
+                          <div className="flex items-center gap-4 text-xs text-[#6b7280]">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleLike(post.id)}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <img
+                                src={
+                                  likedIds.includes(post.id)
+                                    ? "/liked-icon.svg"
+                                    : "/like-icon.svg"
+                                }
+                                alt="Likes"
+                                className="h-4 w-4"
+                              />
+                              <span className="text-neutral-600">
+                                {post.likes}
+                              </span>
+                            </button>
+                            <div className="flex items-center gap-2">
+                              <img
+                                src="/comment-icon.svg"
+                                alt="Comments"
+                                className="h-4 w-4"
+                              />
+                              <span className="text-neutral-600">
+                                {post.comments}
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          </>
         )}
       </div>
       {showToast && (

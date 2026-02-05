@@ -49,7 +49,10 @@ export default function Header() {
           avatarUrl?: string;
         };
         setUserLabel(
-          parsed?.name || parsed?.username || payload?.username || nameFromEmail
+          parsed?.name ||
+            parsed?.username ||
+            payload?.username ||
+            nameFromEmail,
         );
         setProfileAvatar(parsed?.avatarUrl || null);
       } catch {
@@ -92,8 +95,8 @@ export default function Header() {
   });
 
   return (
-    <header className="border-b border-[#e7e9ee] bg-white text-neutral-950">
-      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-6 py-4">
+    <header className="sticky top-0 left-0 z-50 w-full border-b border-[#e7e9ee] bg-white text-neutral-950 h-16 md:h-20 flex items-center shadow-sm">
+      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-4 py-0 md:px-0">
         <Link href="/">
           <div id="logo-div" className="flex items-center gap-3">
             <img
@@ -101,14 +104,14 @@ export default function Header() {
               alt="Your Logo"
               className="w-5 h-[22px] md:w-[30px] md:h-[32px]"
             />
-            <span className="text-base leading-6 font-bold md:text-2xl md:leading-9">
+            <span className="text-base leading-6 font-semibold md:text-2xl md:leading-9">
               Your Logo
             </span>
           </div>
         </Link>
 
-        <div className="hidden w-full max-w-md items-center gap-3 rounded-full border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex">
-          <img src="/search-icon.png" alt="Search" className="h-4 w-4" />
+        <div className="hidden  w-[377px] items-center gap-3 rounded-2xl border border-[#e7e9ee] px-4 py-2 text-sm text-[#6b7280] sm:flex h-12">
+          <img src="/search-input.svg" alt="Search" className="h-6 w-6" />
           <input
             type="text"
             value={searchValue}
@@ -120,19 +123,23 @@ export default function Header() {
               if (pathname !== "/") router.push("/");
             }}
             placeholder="Search"
-            className="w-full bg-transparent text-sm text-[#111827] placeholder:text-[#9ca3af] outline-none"
+            className="w-full bg-transparent text-sm text-neutral-900 placeholder:text-neutral-500 outline-none"
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           {!isLogin && (
-            <div className="hidden items-center gap-4 text-sm sm:flex">
-              <a href="/login" className="font-semibold text-[#0b8bd3]">
+            <div className="hidden items-center gap-6 text-sm sm:flex">
+              <a
+                href="/login"
+                className="text-sm font-semibold text-primary-300 leading-7 -tracking-[0.03em] underline underline-offset-4"
+              >
                 Login
               </a>
+              <span className="text-neutral-300">|</span>
               <a
                 href="/register"
-                className="rounded-full bg-[#0b8bd3] px-5 py-2 text-sm font-semibold text-white"
+                className="rounded-full bg-primary-300 px-5 text-sm font-semibold text-white leading-7 -tracking-[0.03em] h-11 w-45.5 flex items-center justify-center"
               >
                 Register
               </a>
@@ -140,7 +147,7 @@ export default function Header() {
           )}
 
           {isLogin && (
-            <div className="hidden items-center gap-4 sm:flex">
+            <div className="hidden items-center gap-6 sm:flex">
               <button
                 className="flex items-center gap-2 text-sm font-semibold text-primary-300 cursor-pointer"
                 onClick={() => router.push("/post")}
@@ -148,13 +155,16 @@ export default function Header() {
                 <img
                   src="/write-post-icon.svg"
                   alt="Write Post"
-                  className="h-4 w-4"
+                  className="h-6 w-6"
                 />
-                Write Post
+                <span className="text-sm leading-7 -tracking-[0.03em] font-semibold underline underline-offset-4">
+                  Write Post
+                </span>
               </button>
+              <span className="text-neutral-300">|</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2">
+                  <button className="flex items-center gap-2 cursor-pointer">
                     <img
                       src={
                         profileAvatar ||
@@ -162,9 +172,11 @@ export default function Header() {
                         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
                       }
                       alt={avatarAlt}
-                      className="h-9 w-9 rounded-full object-cover"
+                      className="h-10 w-10 rounded-full object-cover"
                     />
-                    <span className="text-sm font-semibold">{userLabel}</span>
+                    <span className="text-sm font-medium leading-7 -tracking-[0.03em]">
+                      {userLabel}
+                    </span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -212,12 +224,14 @@ export default function Header() {
           )}
 
           {isLogin && (
-            <div className="sm:hidden">
+            <div className="flex items-center gap-3 sm:hidden">
+              <img src="/search-icon.png" alt="Search" className="h-5 w-5" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2">
                     <img
                       src={
+                        profileAvatar ||
                         currentUser?.avatarUrl ||
                         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
                       }
@@ -227,7 +241,7 @@ export default function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => router.push("/profile/me")}>
                     <img
                       src="/profile-icon.svg"
                       alt="Profile"
@@ -260,12 +274,15 @@ export default function Header() {
           style={{ height: "calc(100vh - 72px)" }}
         >
           <div className="flex flex-col items-center gap-6">
-            <a href="/login" className="text-base font-semibold text-[#0b8bd3]">
+            <a
+              href="/login"
+              className="text-sm font-semibold text-primary-300 leading-7 -tracking-[0.03em] underline underline-offset-4"
+            >
               Login
             </a>
             <a
               href="/register"
-              className="w-full max-w-[220px] rounded-full bg-[#0b8bd3] px-6 py-3 text-center text-sm font-semibold text-white"
+              className="w-full max-w-[220px] rounded-full bg-primary-300 px-6 py-3 text-center text-sm font-semibold text-white"
             >
               Register
             </a>

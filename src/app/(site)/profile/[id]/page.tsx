@@ -69,7 +69,7 @@ export default function ProfilePage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [token, setToken] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -173,7 +173,7 @@ export default function ProfilePage() {
 
   const handleOpenEdit = () => {
     setEditForm({
-      name: profile.name || "",
+      name: profile?.name || "",
       headline: headline || "",
       avatarFile: null,
       avatarPreview: avatarSrc,

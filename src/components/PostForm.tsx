@@ -38,7 +38,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const hydratedRef = useRef<number | null>(null);
 
@@ -165,7 +165,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
     } catch (error) {
       const message = getApiErrorMessage(
         error,
-        mode === "edit" ? "Failed to update post" : "Failed to upload post"
+        mode === "edit" ? "Failed to update post" : "Failed to upload post",
       );
       setErrors({
         general: message,
@@ -396,7 +396,7 @@ export default function PostForm({ mode, postId, initialData }: PostFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-12 w-44 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80"
+          className="h-12 w-44 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80 cursor-pointer"
         >
           {isSubmitting
             ? mode === "edit"

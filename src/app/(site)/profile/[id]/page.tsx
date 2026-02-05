@@ -30,6 +30,15 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 export default function ProfilePage() {
   const params = useParams();
   const paramId = params?.id?.toString();
@@ -611,7 +620,13 @@ export default function ProfilePage() {
                       </div>
 
                       {isMe && (
-                        <div className="flex items-center gap-4 text-sm sm:mt-0">
+                        <div className="flex flex-wrap items-center gap-4 text-sm sm:mt-0">
+                          <div className="text-xs text-[#6b7280]">
+                            Created {formatDateTime(post.createdAt)}{" "}
+                            <span className="mx-2 inline-block h-3 w-px bg-[#d1d5db]" />
+                            Last updated{" "}
+                            {formatDateTime(post.createdAt || post.createdAt)}
+                          </div>
                           <a
                             href="#"
                             className="font-semibold text-[#0b8bd3] underline underline-offset-2"

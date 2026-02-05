@@ -133,7 +133,8 @@ export default function Home() {
   } = useQuery({
     queryKey: ["search-posts", searchQuery],
     queryFn: () => fetchSearchPosts(searchQuery, 1, 100),
-    enabled: !!searchQuery.trim() && (isDesktopSearchMode || isMobileSearchMode),
+    enabled:
+      !!searchQuery.trim() && (isDesktopSearchMode || isMobileSearchMode),
   });
 
   const recommendedPosts = useMemo(() => {
@@ -292,7 +293,7 @@ export default function Home() {
                     {post.tags.map((tag) => (
                       <span
                         key={`${post.id}-mobile-${tag}`}
-                        className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
+                        className="rounded-xl ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
                       >
                         {tag}
                       </span>
@@ -423,7 +424,7 @@ export default function Home() {
                       {post.tags.map((tag) => (
                         <span
                           key={`${post.id}-search-${tag}`}
-                          className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
+                          className="rounded-xl ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
                         >
                           {tag}
                         </span>
@@ -543,7 +544,7 @@ export default function Home() {
                       {post.tags.map((tag) => (
                         <span
                           key={`${post.id}-${tag}`}
-                          className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
+                          className="rounded-xl ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
                         >
                           {tag}
                         </span>

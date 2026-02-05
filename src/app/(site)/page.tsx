@@ -452,9 +452,9 @@ export default function Home() {
           </div>
 
           {!isSearchMode && (
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-neutral-600">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-600 sm:gap-3 sm:text-sm">
               <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-full px-2 py-2 disabled:opacity-50 cursor-pointer sm:px-4"
                 onClick={() => handlePageChange(Math.max(1, page - 1))}
                 disabled={page === 1}
               >
@@ -477,7 +477,7 @@ export default function Home() {
                 {visiblePages.map((pageNumber) => (
                   <button
                     key={pageNumber}
-                    className={`h-9 w-9 rounded-full border border-[#e7e9ee] ${
+                    className={`h-8 w-8 rounded-full border border-[#e7e9ee] sm:h-9 sm:w-9 ${
                       pageNumber === page
                         ? "bg-[#0b8bd3] text-white"
                         : "text-neutral-600"
@@ -492,7 +492,7 @@ export default function Home() {
                 )}
               </div>
               <button
-                className="flex items-center gap-2 rounded-full px-4 py-2 disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-full px-2 py-2 disabled:opacity-50 cursor-pointer sm:px-4"
                 onClick={() => handlePageChange(Math.min(lastPage, page + 1))}
                 disabled={page === lastPage}
               >
@@ -517,7 +517,7 @@ export default function Home() {
 
         {!isSearchMode && (
           <>
-            <div className="h-3 w-full bg-neutral-300 lg:hidden" />
+            <div className="h-1.5 bg-neutral-300 lg:hidden w-screen relative left-1/2 -translate-x-1/2" />
             <aside className="w-full lg:w-[320px]">
               <div className="lg:sticky lg:top-8">
                 <div className="lg:border-l lg:border-[#e7e9ee] lg:pl-6">

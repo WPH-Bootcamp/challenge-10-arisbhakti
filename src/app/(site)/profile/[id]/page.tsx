@@ -357,30 +357,34 @@ export default function ProfilePage() {
   const headline = profile.headline || "Frontend Developer";
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-10">
+    <main className="mx-auto w-full max-w-200 px-6 py-10">
       <section
-        className={`mx-auto w-full max-w-3xl px-6 py-5 ${
+        className={`mx-auto w-full max-w-3xl px-4 py-3 md:px-6 md:py-4 ${
           isMe ? "rounded-2xl border border-[#e7e9ee]" : ""
         }`}
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 overflow-hidden rounded-full bg-[#e5e7eb]">
+            <div className="h-12.5 w-12.5 md:h-20 md:w-20 overflow-hidden rounded-full bg-[#e5e7eb]">
               <img
                 src={avatarSrc}
                 alt={profile.name}
-                className="h-full w-full object-cover"
+                className="h-12.5 w-12.5 md:h-20 md:w-20 object-cover"
               />
             </div>
             <div>
-              <p className="text-base font-semibold">{profile.name}</p>
-              <p className="text-sm text-[#6b7280]">{headline}</p>
+              <p className="text-sm font-bold leading-7 -tracking-[0.03em] text-[18px] md:leading-8">
+                {profile.name}
+              </p>
+              <p className="text-sm leading-7 -tracking-[0.03em] -mt-1 md:text-base md:leading-7.5 ">
+                {headline}
+              </p>
             </div>
           </div>
           {isMe && (
             <a
               href="#"
-              className="text-sm font-semibold text-[#0b8bd3] underline underline-offset-2 cursor-pointer"
+              className="text-xs leading-6 font-semibold text-primary-300 underline underline-offset-2 cursor-pointer md:text-sm md:leading-7 -tracking-[0.03em] md:underline-offset-4 "
               onClick={(event) => {
                 event.preventDefault();
                 handleOpenEdit();
@@ -393,13 +397,13 @@ export default function ProfilePage() {
       </section>
 
       {isMe ? (
-        <section className="mx-auto mt-6 w-full max-w-3xl">
+        <section className="mt-6 w-full md:max-w-88.5">
           <div className="flex gap-6 border-b border-[#e7e9ee] text-sm">
             <button
               onClick={() => setActiveTab("posts")}
-              className={`px-4 pb-3 font-semibold transition ${
+              className={`px-4 font-semibold transition flex-1 text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] ${
                 activeTab === "posts"
-                  ? "border-b-2 border-[#0b8bd3] text-[#0b8bd3]"
+                  ? "border-b-2 border-[#0b8bd3] text-primary-300"
                   : "text-[#6b7280]"
               }`}
             >
@@ -407,9 +411,9 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => setActiveTab("password")}
-              className={`px-4 pb-3 font-semibold transition ${
+              className={`px-4 font-semibold transition flex-1  text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] ${
                 activeTab === "password"
-                  ? "border-b-2 border-[#0b8bd3] text-[#0b8bd3]"
+                  ? "border-b-2 border-primary-300 text-primary-300"
                   : "text-[#6b7280]"
               }`}
             >
@@ -421,40 +425,37 @@ export default function ProfilePage() {
         <div className="mx-auto mt-6 w-full max-w-3xl border-b border-[#e7e9ee]" />
       )}
 
-      <div className="mx-auto mt-5 w-full max-w-3xl">
+      <div className="mt-5 w-full">
         <div
-          className={`transition-all duration-300 ${
+          className={`transition-all duration-300 flex flex-col gap-4 md:gap-5 ${
             activeTab === "posts"
               ? "opacity-100 translate-y-0"
               : "pointer-events-none h-0 opacity-0 -translate-y-2 overflow-hidden"
           }`}
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col-reverse md:flex-row justify-between gap-4 md:gap-5">
             {postsCount > 0 ? (
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-semibold">{postsCount} Post</span>
+              <div className="flex items-start justify-start gap-3">
+                <span className="text-lg font-semibold md:text-2xl md:leading-9 md:-tracking-[0.03em] ">
+                  {postsCount} Post
+                </span>
               </div>
             ) : (
               <div />
             )}
+
             {isMe && postsCount > 0 && (
-              <button className="flex items-center gap-2 rounded-full bg-[#0b8bd3] px-6 py-2 text-sm font-semibold text-white">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-                Write Post
-              </button>
+              <>
+                <hr className="w-full md:hidden" />
+                <button className="flex items-center gap-2 rounded-full bg-[#0b8bd3] px-6 py-2 text-sm font-semibold text-white w-full justify-center h-11 leading-7 -tracking-[0.03em] md:h-11 md:w-45.5 md:text-sm md:leading-7 ">
+                  <img
+                    src="/write-post-white.svg"
+                    alt="write-logo"
+                    className="w-5 h-5 z-20"
+                  />
+                  Write Post
+                </button>
+              </>
             )}
           </div>
 
@@ -515,81 +516,87 @@ export default function ProfilePage() {
               )}
             </div>
           ) : (
-            <section className="mt-6 space-y-6">
-              {posts.map((post) => (
-                <article
-                  key={post.id}
-                  className="flex flex-col gap-5 border-b border-[#e7e9ee] pb-6 sm:flex-row sm:items-stretch"
+            <section className="flex flex-col gap-4 md:gap-5">
+              {posts.map((post, index) => (
+                <div
+                  key={`post-wrapper-${index}`}
+                  className="flex flex-col gap-4 md:gap-5"
                 >
-                  <a href={`/detail/${post.id}`}>
-                    <img
-                      src={post.imageUrl || "/dummy-home-article.png"}
-                      alt={post.title}
-                      className="h-[190px] w-full rounded-2xl object-cover sm:h-[190px] sm:w-[260px]"
-                    />
-                  </a>
+                  <article
+                    key={post.id}
+                    className="flex flex-col md:flex-row gap-2 md:gap-6"
+                  >
+                    <a href={`/detail/${post.id}`} className="hidden md:block">
+                      <img
+                        src={post.imageUrl || "/dummy-home-article.png"}
+                        alt={post.title}
+                        className="h-64.5 w-85 rounded-[6px] object-cover "
+                      />
+                    </a>
 
-                  <div className="flex-1 sm:flex sm:min-h-[190px] sm:flex-col sm:justify-between">
-                    <div className="space-y-3">
-                      <a href={`/detail/${post.id}`}>
-                        <h3 className="text-base font-semibold">
-                          {post.title}sss
-                        </h3>
-                      </a>
-                      <div className="flex flex-wrap gap-2">
-                        {post.tags.map((tag) => (
-                          <span
-                            key={`${post.id}-${tag}`}
-                            className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
+                    <div className="flex-1 flex flex-col gap-2 md:gap-3">
+                      <div className="flex flex-col gap-2 md:gap-3">
+                        <a href={`/detail/${post.id}`}>
+                          <h3 className="text-base font-bold md:text-xl md:leading-8.5 md:-tracking-[0.03em] leading-7.5">
+                            {post.title}
+                          </h3>
+                        </a>
+                        <div className="flex flex-wrap gap-2">
+                          {post.tags.map((tag) => (
+                            <span
+                              key={`${post.id}-${tag}`}
+                              className="rounded-xl border border-[#dfe3ea] px-3 py-1 text-xs text-neutral-900 leading-6 -tracking-[0.03em]"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-sm text-[#6b7280]">
+                          {stripHtml(post.content).slice(0, 140)}...
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
+                          <span>{formatDate(post.createdAt)}</span>
+                          <span className="h-3 w-px bg-[#d1d5db]" />
+                          <span>{formatDate(post.createdAt)}</span>
+                        </div>
+                      </div>
+
+                      {isMe && (
+                        <div className="flex items-center gap-4 text-sm sm:mt-0">
+                          <a
+                            href="#"
+                            className="font-semibold text-[#0b8bd3] underline underline-offset-2"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handleOpenStats(post.id);
+                            }}
                           >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-sm text-[#6b7280]">
-                        {stripHtml(post.content).slice(0, 140)}...
-                      </p>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
-                        <span>{formatDate(post.createdAt)}</span>
-                        <span className="h-3 w-px bg-[#d1d5db]" />
-                        <span>{formatDate(post.createdAt)}</span>
-                      </div>
+                            Statistic
+                          </a>
+                          <span className="h-5 w-px bg-[#d1d5db]" />
+                          <a
+                            href={`/post?id=${post.id}`}
+                            className="font-semibold text-[#0b8bd3] underline underline-offset-2"
+                          >
+                            Edit
+                          </a>
+                          <span className="h-5 w-px bg-[#d1d5db]" />
+                          <a
+                            href="#"
+                            className="font-semibold text-[#ef4444] underline underline-offset-2"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handleOpenDelete(post.id);
+                            }}
+                          >
+                            Delete
+                          </a>
+                        </div>
+                      )}
                     </div>
-
-                    {isMe && (
-                      <div className="mt-4 flex items-center gap-4 text-sm sm:mt-0">
-                        <a
-                          href="#"
-                          className="font-semibold text-[#0b8bd3] underline underline-offset-2"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleOpenStats(post.id);
-                          }}
-                        >
-                          Statistic
-                        </a>
-                        <span className="h-5 w-px bg-[#d1d5db]" />
-                        <a
-                          href={`/post?id=${post.id}`}
-                          className="font-semibold text-[#0b8bd3] underline underline-offset-2"
-                        >
-                          Edit
-                        </a>
-                        <span className="h-5 w-px bg-[#d1d5db]" />
-                        <a
-                          href="#"
-                          className="font-semibold text-[#ef4444] underline underline-offset-2"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleOpenDelete(post.id);
-                          }}
-                        >
-                          Delete
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </article>
+                  </article>
+                  <hr />
+                </div>
               ))}
             </section>
           )}

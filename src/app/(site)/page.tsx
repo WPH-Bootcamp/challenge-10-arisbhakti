@@ -24,6 +24,8 @@ export default function Home() {
     "success",
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSearchMode, setMobileSearchMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const queryClient = useQueryClient();
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
@@ -48,10 +50,30 @@ export default function Home() {
       const stored = localStorage.getItem("searchQuery") || "";
       setSearchQuery(stored);
     };
+    const readMobileMode = () => {
+      setMobileSearchMode(localStorage.getItem("mobileSearchMode") === "true");
+    };
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
     readSearch();
+    readMobileMode();
+    handleResize();
     window.addEventListener("search-updated", readSearch);
-    return () => window.removeEventListener("search-updated", readSearch);
+    window.addEventListener("mobile-search-updated", readMobileMode);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("search-updated", readSearch);
+      window.removeEventListener("mobile-search-updated", readMobileMode);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    localStorage.setItem("searchQuery", value);
+    window.dispatchEvent(new Event("search-updated"));
+  };
 
   const updateLikedStorage = (next: number[]) => {
     setLikedIds(next);
@@ -99,6 +121,11 @@ export default function Home() {
     queryFn: () => fetchMostLikedPosts(1, 3),
   });
 
+  const isDesktopSearchMode = !isMobile && !!searchQuery.trim();
+  const isMobileSearchMode = isMobile && mobileSearchMode;
+  const isSearchMode =
+    isDesktopSearchMode || (isMobileSearchMode && !!searchQuery.trim());
+
   const {
     data: searchData,
     isLoading: isSearchLoading,
@@ -106,7 +133,7 @@ export default function Home() {
   } = useQuery({
     queryKey: ["search-posts", searchQuery],
     queryFn: () => fetchSearchPosts(searchQuery, 1, 100),
-    enabled: !!searchQuery.trim(),
+    enabled: !!searchQuery.trim() && (isDesktopSearchMode || isMobileSearchMode),
   });
 
   const recommendedPosts = useMemo(() => {
@@ -139,7 +166,6 @@ export default function Home() {
     { length: endPage - startPage + 1 },
     (_, index) => startPage + index,
   );
-  const isSearchMode = !!searchQuery.trim();
   const searchPosts =
     searchData?.data.map((post) => ({
       ...post,
@@ -166,6 +192,129 @@ export default function Home() {
     });
     return map;
   }, [authorQueries, authorIds]);
+
+  if (isMobileSearchMode) {
+    return (
+      <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:py-12 md:px-0">
+        <div className="mx-auto w-full max-w-xl space-y-6">
+          <div className="flex items-center gap-3 rounded-full border border-[#e7e9ee] px-4 py-3 text-sm text-[#6b7280]">
+            <img src="/search-input.svg" alt="Search" className="h-4 w-4" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder="Search"
+              className="w-full bg-transparent text-sm text-[#111827] placeholder:text-[#9ca3af] outline-none"
+            />
+          </div>
+
+          {searchQuery.trim() === "" && (
+            <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+              <img
+                src="/empty-post-icon.png"
+                alt="Search"
+                className="h-24 w-24"
+              />
+              <p className="text-base font-semibold">Search posts</p>
+              <p className="text-sm text-[#6b7280]">
+                Start typing to find posts
+              </p>
+            </div>
+          )}
+
+          {searchQuery.trim() !== "" && isSearchLoading && (
+            <div className="space-y-6">
+              {[...Array(2)].map((_, index) => (
+                <div
+                  key={`mobile-search-${index}`}
+                  className="flex flex-col gap-4 border-b border-[#e7e9ee] pb-6"
+                >
+                  <div className="h-44 w-full rounded-xl bg-[#eef0f4] animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-3/4 rounded bg-[#eef0f4] animate-pulse" />
+                    <div className="h-3 w-full rounded bg-[#eef0f4] animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {searchQuery.trim() !== "" &&
+            !isSearchLoading &&
+            searchPosts.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                <img
+                  src="/empty-post-icon.png"
+                  alt="No results"
+                  className="h-24 w-24"
+                />
+                <p className="text-base font-semibold">No results found</p>
+                <p className="text-sm text-[#6b7280]">
+                  Try using different keywords
+                </p>
+              </div>
+            )}
+
+          {searchQuery.trim() !== "" &&
+            !isSearchLoading &&
+            searchPosts.map((post) => (
+              <article
+                key={`mobile-search-post-${post.id}`}
+                className="flex flex-col gap-4 border-b border-[#e7e9ee] pb-6"
+              >
+                <Link href={`/detail/${post.id}`}>
+                  <img
+                    src={post.imageUrl || "/dummy-home-article.png"}
+                    alt={post.title}
+                    className="h-44 w-full rounded-xl object-cover"
+                  />
+                </Link>
+                <div className="space-y-2">
+                  <Link href={`/detail/${post.id}`}>
+                    <h3 className="text-base font-bold leading-7">
+                      {post.title}
+                    </h3>
+                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <span
+                        key={`${post.id}-mobile-${tag}`}
+                        className="rounded-full ring ring-inset ring-neutral-300 py-1 px-3 text-xs leading-6 -tracking-[0.03em] text-neutral-900"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm leading-6 -tracking-[0.03em] line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-[#6b7280]">
+                    <Link
+                      href={`/profile/${post.author.id}`}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
+                        <img
+                          src={
+                            authorMap.get(post.author.id)?.avatarUrl ||
+                            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                          }
+                          alt={post.author.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-[#111827]">
+                        {post.author.name}
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-6 md:py-12 md:px-0">

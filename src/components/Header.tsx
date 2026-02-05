@@ -23,6 +23,15 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const handleMobileSearch = () => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("searchQuery", "");
+    localStorage.setItem("mobileSearchMode", "true");
+    window.dispatchEvent(new Event("search-updated"));
+    window.dispatchEvent(new Event("mobile-search-updated"));
+    if (pathname !== "/") router.push("/");
+  };
+
   const readAuth = () => {
     if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
@@ -97,7 +106,16 @@ export default function Header() {
   return (
     <header className="sticky top-0 left-0 z-50 w-full border-b border-[#e7e9ee] bg-white text-neutral-950 h-16 md:h-20 flex items-center shadow-sm">
       <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-4 px-4 py-0 md:px-0">
-        <Link href="/">
+        <Link
+          href="/"
+          onClick={() => {
+            if (typeof window === "undefined") return;
+            localStorage.setItem("searchQuery", "");
+            localStorage.setItem("mobileSearchMode", "false");
+            window.dispatchEvent(new Event("search-updated"));
+            window.dispatchEvent(new Event("mobile-search-updated"));
+          }}
+        >
           <div id="logo-div" className="flex items-center gap-3">
             <img
               src="/your-logo.svg"
@@ -203,7 +221,18 @@ export default function Header() {
 
           {!isLogin && (
             <div className="flex items-center gap-3 sm:hidden">
-              <img src="/search-icon.png" alt="Search" className="h-5 w-5" />
+              <button
+                type="button"
+                onClick={handleMobileSearch}
+                className="inline-flex h-9 w-9 items-center justify-center"
+                aria-label="Search"
+              >
+                <img
+                  src="/search-input.svg"
+                  alt="Search"
+                  className="h-5 w-5"
+                />
+              </button>
               <button
                 type="button"
                 className="inline-flex h-9 w-9 items-center justify-center text-[#111827]"
@@ -225,7 +254,18 @@ export default function Header() {
 
           {isLogin && (
             <div className="flex items-center gap-3 sm:hidden">
-              <img src="/search-icon.png" alt="Search" className="h-5 w-5" />
+              <button
+                type="button"
+                onClick={handleMobileSearch}
+                className="inline-flex h-9 w-9 items-center justify-center"
+                aria-label="Search"
+              >
+                <img
+                  src="/search-input.svg"
+                  alt="Search"
+                  className="h-5 w-5"
+                />
+              </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2">

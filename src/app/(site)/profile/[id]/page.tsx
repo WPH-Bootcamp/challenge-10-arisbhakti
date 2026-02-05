@@ -562,14 +562,52 @@ export default function ProfilePage() {
                             </span>
                           ))}
                         </div>
-                        <p className="text-sm text-[#6b7280]">
-                          {stripHtml(post.content).slice(0, 140)}...
+                        <p className="text-sm text-[#6b7280] line-clamp-2">
+                          {stripHtml(post.content).slice(0, 140)}
                         </p>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
-                          <span>{formatDate(post.createdAt)}</span>
-                          <span className="h-3 w-px bg-[#d1d5db]" />
-                          <span>{formatDate(post.createdAt)}</span>
-                        </div>
+                        {/* <div className="flex flex-wrap items-center gap-3 text-xs text-[#6b7280]">
+                        <span>{formatDate(post.createdAt)}</span>
+                        <span className="h-3 w-px bg-[#d1d5db]" />
+                        <span>{formatDate(post.createdAt)}</span>
+                      </div> */}
+                        {!isMe && (
+                          <>
+                            <div className="flex items-center gap-3 text-xs text-[#6b7280]">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
+                                  <img
+                                    src={avatarSrc}
+                                    alt={profile.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <span className="text-sm font-medium text-[#111827]">
+                                  {profile.name}
+                                </span>
+                              </div>
+                              <span>•</span>
+                              <span>{formatDate(post.createdAt)}</span>
+                            </div>
+                            <div className="mt-2 flex items-center gap-4 text-xs text-[#6b7280]">
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src="/like-icon.svg"
+                                  alt="Likes"
+                                  className="h-4 w-4"
+                                />
+                                <span>{post.likes}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src="/comment-icon.svg"
+                                  alt="Comments"
+                                  className="h-4 w-4"
+                                />
+                                <span>{post.comments}</span>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {isMe && (

@@ -243,12 +243,14 @@ export default function DetailPage() {
   return (
     <main className="mx-auto w-full max-w-200 px-6 py-10">
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold sm:text-3xl">{post.title}</h1>
+        <h1 className="text-[28px] leading-9.5 font-bold -tracking-[0.03em] md:text-[36px] md:leading-11 md:-tracking-[0.02em]">
+          {post.title}
+        </h1>
         <div className="flex flex-wrap gap-2">
           {post.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-[#dfe3ea] px-3 py-1 text-xs text-[#4b5563]"
+              className="rounded-xl border border-[#dfe3ea] px-3 py-2 text-xs text-neutral-900  -tracking-[0.03em]"
             >
               {tag}
             </span>
@@ -259,14 +261,14 @@ export default function DetailPage() {
             href={`/profile/${post.author.id}`}
             className="flex items-center gap-2"
           >
-            <div className="h-7 w-7 overflow-hidden rounded-full bg-[#e5e7eb]">
+            <div className="h-10 w-10 overflow-hidden rounded-full bg-[#e5e7eb]">
               <img
                 src={author?.avatarUrl || "/dummy-home-article.png"}
                 alt={author?.name || post.author.name}
-                className="h-full w-full object-cover"
+                className="h-10 w-10 object-cover"
               />
             </div>
-            <span className="text-sm font-medium text-[#111827]">
+            <span className="text-xs leading-6 font-medium text-neutral-900 md:text-sm md:leading-7 -tracking-[0.03em] ">
               {author?.name || post.author.name}
             </span>
           </Link>
@@ -353,7 +355,7 @@ export default function DetailPage() {
               type="button"
               onClick={() => handleSubmitComment(false)}
               disabled={isCommentSubmitting}
-              className="flex h-11 w-32 items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80"
+              className="flex h-11 w-32 items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80 cursor-pointer"
             >
               {isCommentSubmitting && (
                 <svg
@@ -426,7 +428,7 @@ export default function DetailPage() {
                 <DialogClose asChild>
                   <button
                     type="button"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827]"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#111827] cursor-pointer"
                     aria-label="Close"
                   >
                     <svg
@@ -466,7 +468,7 @@ export default function DetailPage() {
                     type="button"
                     onClick={() => handleSubmitComment(true)}
                     disabled={isModalSubmitting}
-                    className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80 sm:w-44"
+                    className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white disabled:opacity-80 sm:w-44 cursor-pointer"
                   >
                     {isModalSubmitting && (
                       <svg

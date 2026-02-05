@@ -99,13 +99,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-105 rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
-        <div className="px-8 py-7">
-          <h1 className="text-2xl font-semibold text-[#111827]">Sign In</h1>
-          <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#111827]">
+    <div className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4 py-10 text-neutral-900">
+      <div className="w-full md:max-w-[400px] rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+        <div className="px-6 py-6 flex flex-col gap-5">
+          <h1 className="text-xl leading-8.5 -tracking-[0.03em] font-bold ">
+            Sign In
+          </h1>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm leading-7 font-semibold text-[#111827]">
                 Email
               </label>
               <input
@@ -130,8 +132,8 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-[#111827]">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm leading-7 font-semibold text-[#111827]">
                 Password
               </label>
               <div className="relative">
@@ -219,7 +221,7 @@ export default function LoginPage() {
             )}
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#111827]">
+          <p className="text-center text-sm text-[#111827]">
             Don&apos;t have an account?{" "}
             <a href="/register" className="font-semibold text-[#0b8bd3]">
               Register

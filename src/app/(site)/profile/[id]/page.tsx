@@ -62,6 +62,11 @@ export default function ProfilePage() {
     newPassword: "",
     confirmPassword: "",
   });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
   const [passwordErrors, setPasswordErrors] = useState<
     Partial<Record<keyof typeof passwordForm, string>>
   >({});
@@ -401,7 +406,7 @@ export default function ProfilePage() {
           <div className="flex gap-6 border-b border-[#e7e9ee] text-sm">
             <button
               onClick={() => setActiveTab("posts")}
-              className={`px-4 font-semibold transition flex-1 text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] ${
+              className={`px-4 font-semibold transition flex-1 text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] cursor-pointer ${
                 activeTab === "posts"
                   ? "border-b-2 border-[#0b8bd3] text-primary-300"
                   : "text-[#6b7280]"
@@ -411,7 +416,7 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={() => setActiveTab("password")}
-              className={`px-4 font-semibold transition flex-1  text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] ${
+              className={`px-4 font-semibold transition flex-1  text-xs leading-6 md:text-sm md:leading-7 -tracking-[0.03em] cursor-pointer ${
                 activeTab === "password"
                   ? "border-b-2 border-primary-300 text-primary-300"
                   : "text-[#6b7280]"
@@ -447,7 +452,10 @@ export default function ProfilePage() {
             {isMe && postsCount > 0 && (
               <>
                 <hr className="w-full md:hidden" />
-                <button className="flex items-center gap-2 rounded-full bg-[#0b8bd3] px-6 py-2 text-sm font-semibold text-white w-full justify-center h-11 leading-7 -tracking-[0.03em] md:h-11 md:w-45.5 md:text-sm md:leading-7 ">
+                <button
+                  className="flex items-center gap-2 rounded-full bg-[#0b8bd3] px-6 py-2 text-sm font-semibold text-white w-full justify-center h-11 leading-7 -tracking-[0.03em] md:h-11 md:w-45.5 md:text-sm md:leading-7 cursor-pointer "
+                  onClick={() => (window.location.href = "/post")}
+                >
                   <img
                     src="/write-post-white.svg"
                     alt="write-logo"
@@ -488,7 +496,10 @@ export default function ProfilePage() {
                     No posts yet, but every great writer starts with the first
                     one.
                   </p>
-                  <button className="mt-2 flex items-center gap-2 rounded-full bg-[#0b8bd3] px-8 py-3 text-sm font-semibold text-white">
+                  <button
+                    className="mt-2 flex items-center gap-2 rounded-full bg-[#0b8bd3] px-8 py-3 text-sm font-semibold text-white"
+                    onClick={() => (window.location.href = "/post")}
+                  >
                     <svg
                       width="16"
                       height="16"
@@ -617,7 +628,7 @@ export default function ProfilePage() {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showPasswords.current ? "text" : "password"}
                     placeholder="Enter current password"
                     value={passwordForm.currentPassword}
                     onChange={(event) =>
@@ -632,7 +643,19 @@ export default function ProfilePage() {
                         : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
                     }`}
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a] cursor-pointer"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({
+                        ...prev,
+                        current: !prev.current,
+                      }))
+                    }
+                    aria-label={
+                      showPasswords.current ? "Hide password" : "Show password"
+                    }
+                  >
                     <svg
                       width="18"
                       height="18"
@@ -647,7 +670,7 @@ export default function ProfilePage() {
                       <path d="M2.46 12s3.74-7 9.54-7 9.54 7 9.54 7-3.74 7-9.54 7-9.54-7-9.54-7z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
-                  </span>
+                  </button>
                 </div>
                 {passwordErrors.currentPassword && (
                   <p className="text-xs text-[#f43f5e]">
@@ -660,7 +683,7 @@ export default function ProfilePage() {
                 <label className="text-sm font-semibold">New Password</label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showPasswords.new ? "text" : "password"}
                     placeholder="Enter new password"
                     value={passwordForm.newPassword}
                     onChange={(event) =>
@@ -672,7 +695,19 @@ export default function ProfilePage() {
                         : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
                     }`}
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a] cursor-pointer"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({
+                        ...prev,
+                        new: !prev.new,
+                      }))
+                    }
+                    aria-label={
+                      showPasswords.new ? "Hide password" : "Show password"
+                    }
+                  >
                     <svg
                       width="18"
                       height="18"
@@ -687,7 +722,7 @@ export default function ProfilePage() {
                       <path d="M2.46 12s3.74-7 9.54-7 9.54 7 9.54 7-3.74 7-9.54 7-9.54-7-9.54-7z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
-                  </span>
+                  </button>
                 </div>
                 {passwordErrors.newPassword && (
                   <p className="text-xs text-[#f43f5e]">
@@ -702,7 +737,7 @@ export default function ProfilePage() {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showPasswords.confirm ? "text" : "password"}
                     placeholder="Enter confirm new password"
                     value={passwordForm.confirmPassword}
                     onChange={(event) =>
@@ -717,7 +752,19 @@ export default function ProfilePage() {
                         : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
                     }`}
                   />
-                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a] cursor-pointer"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({
+                        ...prev,
+                        confirm: !prev.confirm,
+                      }))
+                    }
+                    aria-label={
+                      showPasswords.confirm ? "Hide password" : "Show password"
+                    }
+                  >
                     <svg
                       width="18"
                       height="18"
@@ -732,7 +779,7 @@ export default function ProfilePage() {
                       <path d="M2.46 12s3.74-7 9.54-7 9.54 7 9.54 7-3.74 7-9.54 7-9.54-7-9.54-7z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
-                  </span>
+                  </button>
                 </div>
                 {passwordErrors.confirmPassword && (
                   <p className="text-xs text-[#f43f5e]">

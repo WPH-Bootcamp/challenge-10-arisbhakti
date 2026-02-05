@@ -46,7 +46,7 @@ export default function DetailPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -415,7 +415,7 @@ export default function DetailPage() {
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="text-left text-sm font-semibold text-[#0b8bd3]"
+                className="text-left text-sm font-semibold text-primary-300 cursor-pointer"
               >
                 See All Comments
               </button>

@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [errorPulse, setErrorPulse] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const hasErrors = useMemo(
     () => Object.values(errors).some(Boolean),
@@ -121,7 +122,7 @@ export default function LoginPage() {
                     ? `border-[#f43f5e] focus:border-[#f43f5e] focus:ring-[#f43f5e]/20 ${
                         errorPulse ? "shake" : ""
                       }`
-                    : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
+                    : "border-[#d9dce3] focus:border-primary-300 focus:ring-primary-300/20"
                 }`}
               />
               {errors.email && (
@@ -135,7 +136,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={form.password}
                   onChange={(event) => {
@@ -154,7 +155,12 @@ export default function LoginPage() {
                       : "border-[#d9dce3] focus:border-[#0b8bd3] focus:ring-[#0b8bd3]/20"
                   }`}
                 />
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a]">
+                <button
+                  type="button"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0f172a] cursor-pointer"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
                   <svg
                     width="18"
                     height="18"
@@ -169,7 +175,7 @@ export default function LoginPage() {
                     <path d="M2.46 12s3.74-7 9.54-7 9.54 7 9.54 7-3.74 7-9.54 7-9.54-7-9.54-7z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
-                </span>
+                </button>
               </div>
               {errors.password && (
                 <p className="text-xs text-[#f43f5e]">{errors.password}</p>
@@ -181,7 +187,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className={`flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#0b8bd3] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(11,139,211,0.25)] transition hover:bg-[#0a7bbd] ${
                 isLoading ? "opacity-80" : ""
-              }`}
+              } cursor-pointer`}
             >
               {isLoading && (
                 <svg

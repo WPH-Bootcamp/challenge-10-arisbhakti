@@ -252,6 +252,19 @@ export default function Home() {
                 <p className="text-sm text-[#6b7280]">
                   Try using different keywords
                 </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem("searchQuery", "");
+                    localStorage.setItem("mobileSearchMode", "false");
+                    setSearchQuery("");
+                    window.dispatchEvent(new Event("search-updated"));
+                    window.dispatchEvent(new Event("mobile-search-updated"));
+                  }}
+                  className="mt-2 h-11 rounded-full bg-[#0b8bd3] px-8 text-sm font-semibold text-white"
+                >
+                  Back to Home
+                </button>
               </div>
             )}
 

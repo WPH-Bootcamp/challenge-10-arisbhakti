@@ -100,7 +100,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] flex items-center justify-center px-4 py-10 text-neutral-900">
-      <div className="w-full md:max-w-[400px] rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+      <div className="w-full md:max-w-100 rounded-2xl border border-[#e8eaf0] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
         <div className="px-6 py-6 flex flex-col gap-5">
           <h1 className="text-xl leading-8.5 -tracking-[0.03em] font-bold ">
             Sign In

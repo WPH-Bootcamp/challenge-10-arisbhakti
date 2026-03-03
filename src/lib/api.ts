@@ -1,39 +1,289 @@
 /**
  * API Utility
- * 
+ *
  * Helper functions untuk fetch data dari backend API
  * Kamu bisa modify atau extend sesuai kebutuhan
  */
 
+import axios from "axios";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-/**
- * Generic fetch function dengan error handling
- */
-async function fetchAPI<T>(endpoint: string): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+if (!API_BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL is not defined");
+}
+
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    accept: "application/json",
+    "Content-Type": "application/json",
+  },
+});
+
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type RegisterResponse = {
+  id: number;
+  email: string;
+  username: string;
+};
+
+export async function registerUser(payload: RegisterPayload) {
+  const response = await apiClient.post<RegisterResponse>(
+    "/auth/register",
+    payload
+  );
+  return response.data;
+}
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  token: string;
+};
+
+export async function loginUser(payload: LoginPayload) {
+  const response = await apiClient.post<LoginResponse>("/auth/login", payload);
+  return response.data;
+}
+
+export type CreateCommentPayload = {
+  content: string;
+};
+
+export type CreateCommentResponse = {
+  id: number;
+  content: string;
+  createdAt: string;
+  author: {
+    id: number;
+    name: string;
+    email: string;
+    username: string;
+    headline?: string | null;
+    avatarUrl?: string | null;
+    avatarPublicId?: string | null;
+  };
+  post: {
+    id: number;
+    title: string;
+  };
+};
+
+export async function createComment(postId: number, payload: CreateCommentPayload) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const response = await apiClient.post<CreateCommentResponse>(
+    `/comments/${postId}`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
-    
-    const data = await response.json();
-    return data;
+  );
+  return response.data;
+}
+
+export type CreatePostPayload = {
+  title: string;
+  content: string;
+  tags: string[];
+  image: File;
+};
+
+export type CreatePostResponse = {
+  id: number;
+  title: string;
+  content: string;
+  tags: string[];
+  imageUrl: string;
+  imagePublicId: string;
+  createdAt: string;
+  likes: number;
+  comments: number;
+  author: {
+    id: number;
+  };
+};
+
+export async function createPost(payload: CreatePostPayload) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("title", payload.title);
+  formData.append("content", payload.content);
+  formData.append("tags", payload.tags.join(","));
+  formData.append("image", payload.image);
+  const response = await apiClient.post<CreatePostResponse>("/posts", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+}
+
+export type UpdatePostPayload = {
+  title: string;
+  content: string;
+  tags: string[];
+  image?: File | null;
+  removeImage?: boolean;
+};
+
+export async function updatePost(postId: number, payload: UpdatePostPayload) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("title", payload.title);
+  formData.append("content", payload.content);
+  formData.append("tags", payload.tags.join(","));
+  if (payload.image) {
+    formData.append("image", payload.image);
+  }
+  if (payload.removeImage !== undefined) {
+    formData.append("removeImage", payload.removeImage ? "true" : "");
+  }
+  const response = await apiClient.patch<CreatePostResponse>(
+    `/posts/${postId}`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return response.data;
+}
+
+export async function toggleLikePost(postId: number) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const response = await apiClient.post(`/posts/${postId}/like`, "", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/plain",
+    },
+  });
+  return response.data;
+}
+
+export async function deletePost(postId: number) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  try {
+    const response = await apiClient.delete<{ success: boolean }>(
+      `/posts/${postId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
-    console.error('API Fetch Error:', error);
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to delete post.";
+      throw new Error(message);
+    }
     throw error;
   }
 }
 
-// TODO: Implement API functions sesuai dengan endpoint yang tersedia
-// Contoh:
-// export async function getBlogPosts() {
-//   return fetchAPI<BlogPost[]>('/posts');
-// }
-//
-// export async function getBlogPost(id: string) {
-//   return fetchAPI<BlogPost>(`/posts/${id}`);
-// }
+export async function changePassword(payload: {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  try {
+    const response = await apiClient.patch<{ success: boolean; message: string }>(
+      "/users/password",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to update password.";
+      throw new Error(message);
+    }
+    throw error;
+  }
+}
 
-export { fetchAPI, API_BASE_URL };
+export async function updateProfile(payload: {
+  name: string;
+  headline: string;
+  avatar: File;
+}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+  const formData = new FormData();
+  formData.append("name", payload.name);
+  formData.append("headline", payload.headline);
+  formData.append("avatar", payload.avatar);
+  try {
+    const response = await apiClient.patch(
+      "/users/profile",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data as {
+      id: number;
+      name: string;
+      email: string;
+      username: string;
+      headline: string;
+      avatarUrl: string;
+      avatarPublicId: string;
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        (error.response?.data as { message?: string })?.message ||
+        "Failed to update profile.";
+      throw new Error(message);
+    }
+    throw error;
+  }
+}
